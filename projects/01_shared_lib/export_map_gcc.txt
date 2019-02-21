@@ -1,0 +1,22 @@
+{
+	global:
+		OpenArchive;
+		CloseArchive;
+		OpenArchive;
+		ProcessFile;
+		ReadHeader;
+		ReadHeaderEx;
+		SetChangeVolProc;
+		SetProcessDataProc;
+		CanYouHandleThisFile;
+		GetPackerCaps;
+		OpenArchiveW;
+		ProcessFileW;
+		ReadHeaderExW;
+		CanYouHandleThisFileW;
+		ConfigurePacker;
+		ExtensionInitialize;
+		ExtensionFinalize;
+	local:
+		*;
+};
