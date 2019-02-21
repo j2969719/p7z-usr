@@ -48,15 +48,25 @@ Installation
 	Make sure "7z.so" can be located either by creating symlink or by providing 
 	enviroment variable that gets assigned before DCMD is started.
 	Please see the "Library Information" section.
+	Default location is same directory "p7z_usr.wcx" is in, in this case:
+		"./plugins/wcx/p7z_usr/7z.so"
 
-	In DCMD go to Options then Plugins. In Packer Plugin tab click 
+	In DCMD go to Options then Plugins. In Packer Plugin tab, click 
 	the "Add" button and select the "p7z_usr.wcx" file.
+	In the "Tweak" dialog box, add the file extensions of file types for this plugin 
+	to open, see handlers list below. 
+	Notes:
+	* this is a read-only plugin, omitting types supported by other dedicated 
+	  plugins is recommended.
+	* list of file types supported is long, direct DCMD configuration file
+	  editing may be a better approach.
 	
 
 Formats and suffix list sample
 -----------------------------------------
 	Below is a dump of formats from "7z.so" version 15.09.
-	Current can be found in an official 7-Zip documentation.
+	Actual list is written to the console STDOUT on plugin initialization with debug mode on.
+	More descriptive can be found in an official 7-Zip documentation.
 
 		7z:       [7z; ]
 		APM:      [apm; ]
@@ -120,7 +130,6 @@ Features and Limitations
 	[+] configuration via INI file (documentation provided inside it).
 	[-] read only
 	[-] multi volume archives not supported
-	[-] password protected archives not supported
 	[-] no file dates and attributes
 	[-] no Rar5 (can only see what files are in archive)
 
@@ -129,14 +138,14 @@ FAQ
 -----------------------
 
 	Q: What is "7z.so"?
-	A: This is a Linux executable shared library. it can be build with P7ZIP.
+	A: This is a Linux executable shared library, build by compiling P7ZIP project.
 
 	Q: Where to get "7z.so"?
 	A: 
 		Compile P7ZIP yourself or download from your linux distribution.
 		Ubuntu has a binary package named "p7zip-full" that contains "7z.so".
-		Note: Generally it is not a good idea to make P7z Usr use this lib from
-		a different package.
+		Note: Generally it is not a good idea to make P7Z Usr use this lib from
+		an untested package.
 
 	Q: How to build "7z.so"?
 	A:
@@ -185,9 +194,11 @@ Changelog
 		* New INI optional configurations
 		* Source code file names re-arrangemed.
 		* About box.
-
-
-
+	
+	v 0.3
+		* Fixed major error on symbolic links processing.
+		* New INI configuration: custom shell command on archive open.
+		* Readme file updates.
 
 
 

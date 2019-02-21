@@ -36,6 +36,16 @@ static NDLL::CLibrary*    lib2 = 0;
 static Func_CreateObject  createObjectFunc2 = 0;
 IProcRelay*               cProcRelayIntrf = 0; // initialized in "p7u_cls.cpp"
 
+/*
+#include <cstdio>
+#include <cstdlib>
+// replacement of a minimal set of functions
+void* operator new( std::size_t size2 )
+{
+	std::printf("global op new called, size = %zu\n",size2);
+	return std::malloc(size2);
+}//*/
+
 class CWCXInFileStream : public CInFileStream
 {
 public:
@@ -204,6 +214,11 @@ WcxiPlugin::WcxiPlugin( const char* szIni )
 		strPromptBoxSmn = ( a != vars.end() ? a->second : strPromptBoxSmn );
 		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("szMessageBoxSymbol") );
 		strMsgBoxSmn = ( a != vars.end() ? a->second : strMsgBoxSmn );
+	}
+	{
+		// szArcOpenShellNotify
+		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("szArcOpenShellNotify") );
+		strArcOpenShellNotify = ( a != vars.end() ? a->second : strArcOpenShellNotify );
 	}
 }
 std::vector<SArcHandler*> WcxiPlugin::getHandlersForExt( const char* szExt )
@@ -427,6 +442,25 @@ void* WcxiPlugin::openArchive( wcxi_OpenArchiveData& acd )
 
 	soa.uNumItems = uNumItems2;
 	wcxi_DebugString("x::openArchive() done OK.");
+
+
+	if( !strArcOpenShellNotify.empty() ){
+		wcxi_DebugString( HfArgs("shell-command: [%1]")
+				.arg( strArcOpenShellNotify.c_str() ).c_str() );
+		std::string strSelfWcxDir = hf_dirname( SelfWcxFile->c_str() );
+		//wcxi_DebugString( HfArgs("handler_name : [%1]\n"
+		//				"arc_name     : [%2]\n"
+		//				"wcx_dir      : [%3]")
+		//		.arg( hdlr->name2.c_str() )
+		//		.arg( soa.strArcName.c_str() )
+		//		.arg( strSelfWcxDir.c_str() ).c_str() );
+		std::string cmd2 = strArcOpenShellNotify;
+		cmd2 = hf_strreplace( "{*handler_name*}", hdlr->name2.c_str(), cmd2.c_str() );
+		cmd2 = hf_strreplace( "{*arc_name*}", soa.strArcName.c_str(), cmd2.c_str() );
+		cmd2 = hf_strreplace( "{*wcx_dir*}", strSelfWcxDir.c_str(), cmd2.c_str() );
+		if( system( cmd2.c_str() ) ){
+		}
+	}
 	return new wcxi_SOpenedArc( soa );
 }
 bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
@@ -543,14 +577,19 @@ std::string wcxi_readlink( const char* szPath, bool bEmptyOnFail )
 {
 	std::string str = ( bEmptyOnFail ? "" : szPath );
 	struct stat sbx;
+	memset( &sbx, 0, sizeof(sbx) );
 	if( -1 != lstat( szPath, &sbx ) ){
-		std::vector<char> bfr;
-		int num = sbx.st_size + 1;
-		bfr.resize( num, 0 );
-		ssize_t numr = readlink( szPath, &bfr[0], bfr.size() );
-		if( numr != -1 ){
-			bfr[numr] = 0;
-			str.assign( &bfr[0] );
+		if( S_ISLNK(sbx.st_mode) ){ // if is symbolic link.
+			if( sbx.st_size < 65536 ){ // sanity check on sym-link size.
+				std::vector<char> bfr;
+				int num = sbx.st_size + 1;
+				bfr.resize( num, 0 );
+				ssize_t numr = readlink( szPath, &bfr[0], bfr.size() );
+				if( numr != -1 ){
+					bfr[numr] = 0;
+					str.assign( &bfr[0] );
+				}
+			}
 		}
 	}
 	return str;
@@ -587,6 +626,7 @@ bool WcxiPlugin::
 canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 						uint64_t uScanSize4, const char* szExt )
 {
+	//wcxi_DebugString( HfArgs("x::canYouHandleThisFile()").arg("").c_str());
 	std::string str, strFnmRl;
 	uScanSize4 = ( uScanSize4 ? uScanSize4 : uCYHTFScanSize );
 	hf_assert(cPlugin);
@@ -594,7 +634,6 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 	sLastCyhtf.clear2();
 	if( !szFileName || !*szFileName )
 		return 0;
-
 	if( !(str = wcxi_readlink( szFileName, 0 )).empty() ){
 		strFnmRl = str;
 	}else{
@@ -602,6 +641,7 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 	}
 	std::basic_string<wchar_t> strFnmUc;
 	hf_Utf8DecodeToAny( strFnmRl.c_str(), -1, strFnmUc, 0 );
+	wcxi_DebugString( HfArgs("strFnmUc.size: %1").arg( strFnmUc.size() ).c_str());
 
 	std::vector<SArcHandler*> hdlrs3;
 	std::vector<SArcHandler*>::const_iterator c;

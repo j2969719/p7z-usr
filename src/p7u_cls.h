@@ -123,7 +123,7 @@ private:
 	std::vector<SArcHandler> hndlrs2;
 	SCyhtf                   sLastCyhtf;
 	uint32_t                 uArcLastIdent;
-	std::string              strCYHTFHandlersOff, strIni2;
+	std::string              strCYHTFHandlersOff, strIni2, strArcOpenShellNotify;
 	std::vector<std::string> lsCYHTFHandlersOff;
 	uint64_t                 uScanSize, uCYHTFScanSize;
 	bool                     bDoAccessViolationOnCAErr;
