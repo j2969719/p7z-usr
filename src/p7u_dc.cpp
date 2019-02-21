@@ -12,7 +12,9 @@
 //static tChangeVolProc   fnChangeVolProc = 0;
 //static tProcessDataProc fnProcessDataProc_ = 0;
 
-static CDCProcRelay* cProcRelayIntrf2 = 0; //CDCProcRelay* cProcRelayIntrf;
+//static CDCProcRelay* cProcRelayIntrf2 = 0; //CDCProcRelay* cProcRelayIntrf;
+
+DcMessageBoxProc_t fncDcMessageBoxProc;
 
 // Symbol name for DCMD input dialog box function.
 // Got it by examining 'doublecmd' executable with a command:
@@ -20,11 +22,17 @@ static CDCProcRelay* cProcRelayIntrf2 = 0; //CDCProcRelay* cProcRelayIntrf;
 //const char* CDCProcRelay::szInpBoxSmbl = "FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL";
 //const char* CDCProcRelay::szMsgBoxSmbl = "FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT";
 
+void wcxi_SafeInitDcInterface()
+{
+	if(!cProcRelayIntrf)
+		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
+}
 CDCProcRelay::CDCProcRelay()
 	: fnProcessDataProc(0), nMaxPasswords(3)
 {
+	hf_assert( cPlugin );
 	fncDcPromptBoxProc = (DcPromptBoxProc_t)dlsym( RTLD_DEFAULT, cPlugin->getDcPromptBoxSymbol() );
-	fncDcMessageBoxProc = (DcMessageBoxProc_t)dlsym( RTLD_DEFAULT, cPlugin->getDcMsgBoxSymbol() );
+	//fncDcMessageBoxProc = (DcMessageBoxProc_t)dlsym( RTLD_DEFAULT, cPlugin->getDcMsgBoxSymbol() );
 }
 
 HANDLE __stdcall OpenArchive( tOpenArchiveData* ArchiveData )
@@ -34,6 +42,7 @@ HANDLE __stdcall OpenArchive( tOpenArchiveData* ArchiveData )
 	//return image;
 	return 0;
 }
+
 
 HANDLE __stdcall OpenArchiveW( tOpenArchiveDataW* arcd )
 {
@@ -172,7 +181,9 @@ void __stdcall SetProcessDataProc( HANDLE, tProcessDataProc pProcessDataProc )
 	//wcxi_DebugString("SetProcessDataProc()");
 	if(!cProcRelayIntrf)
 		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
-	cProcRelayIntrf2->fnProcessDataProc = pProcessDataProc;
+
+	//cProcRelayIntrf2->fnProcessDataProc = pProcessDataProc;
+	((CDCProcRelay*)cProcRelayIntrf2)->fnProcessDataProc = pProcessDataProc;
 }
 
 BOOL __stdcall CanYouHandleThisFile( char* szFileName )

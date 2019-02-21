@@ -131,5 +131,6 @@ private:
 };
 extern WcxiPlugin* cPlugin;
 extern IProcRelay* cProcRelayIntrf;
+extern IProcRelay* cProcRelayIntrf2;
 
 #endif //_P7U_CLS_H_

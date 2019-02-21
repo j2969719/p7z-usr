@@ -9,6 +9,8 @@
 #	include <unistd.h>
 #	include <sys/stat.h>
 #	include <sys/types.h>
+#	include <pwd.h>      //getpwuid()
+#	include <dlfcn.h>    //dladdr()
 #endif
 #include <assert.h>
 #include <cctype>
@@ -523,7 +525,7 @@ readBytes2( const uint64_t& pos, size_t sizetoread, std::vector<uint8_t>& out, s
 		int readd = fread( &out[pos2], 1, sizetoread, Stream );
 		if(readd2)
 			*readd2 = readd;
-		if( !(flags & ERBF_NOSIZECONSTRAINT) && ( !readd || readd != (int)sizetoread ) ){	//if error.
+		if( !(flags & ERBF_NOSIZECONSTRAINT) && ( !readd || readd != (int)sizetoread ) ){	//if error_.
 			return 0;
 		}
 	}
@@ -617,7 +619,7 @@ void hf_GetFileDSVContents( const char* fn, const char* delim, std::vector<std::
 	//tmp_2 = tmp_2;
 }
 
-
+/*
 ///		Simple INI file parse without sections.
 ///		Sections instead are returned as items with key set to section name and empty value.
 ///		Output is a list of string key-value pairs.
@@ -737,6 +739,84 @@ bool hf_GetCommandLineSOSpec( std::vector<std::string>& outp, uint32_t uPid )
 			return !outp.empty();
 		}
 #	endif
+	return 0;
+}
+
+/// Gets current working directory. Uses getcwd() from the 'libc'.
+/// \sa GP_dirname_and_fn
+std::string hf_getcwd()
+{
+	#ifdef __GNUC__ //{
+		int i, num = 256; std::string str;
+		for( i=0; i<4; i++, num *= 2 ){ // 4 -> num 4096
+			char* bfr3 = (char*)malloc( num );
+			if(!bfr3) break;
+			if( !getcwd( bfr3, num ) ){
+				if( errno == ERANGE ){ // if 'errno' is set to 'ERANGE'
+					free(bfr3);
+					continue;
+				}
+			}else
+				str = bfr3;
+			free(bfr3);
+			break;
+		}
+		return str;
+	#else
+		// use GetCurrentDirectory() on Windows.
+		#error "WIP."
+		return "";
+	#endif //}
+}
+
+/// Gets the home directory.
+/// \sa GP_dirname_and_fn
+std::string hf_getHomeDir()
+{
+	#ifdef __GNUC__ //{
+		struct passwd* ptr;
+		const char* homedir = getenv("HOME");
+		if( homedir && *homedir )
+			return homedir;
+		if( (ptr = getpwuid( getuid() )) ){
+			homedir = ptr->pw_dir;
+			if( homedir && *homedir )
+				return homedir;
+		}
+		return "";
+	#else
+		//#error "Unsupported platform."
+		hf_assert(!"Unsupported platform.");
+	#endif //}
+	return "";
+}
+/// Removes lib path from LD_PRELOAD env var given pointer to one of it's symbols.
+/// Using pointer symbol, after dyn lib file name is retrirved,
+/// env var is reassigned to new patched value.
+bool hf_ClearLibFromLdPreloadEnv( void* pAnySymbolInDynLib )
+{
+	#ifdef __GNUC__ //{
+		void* pSymbol = (pAnySymbolInDynLib ? pAnySymbolInDynLib : (void*)hf_ClearLibFromLdPreloadEnv);
+		const char* szLdp = getenv("LD_PRELOAD");
+		if( szLdp ){
+			Dl_info dii; std::string strLdp;
+			memset( &dii, 0, sizeof(dii) );
+			dladdr( pSymbol, &dii );
+			int num = 0;
+			strLdp = hf_strreplace( dii.dli_fname, "", szLdp, -1, &num );
+			if( num ){
+				strLdp = "LD_PRELOAD=" + strLdp;
+				putenv( (char*)strLdp.c_str() );
+				//if( (szLdp = getenv("LD_PRELOAD")) ){
+				//	if( !strstr(szLdp, dii.dli_fname ) )
+				//		return 1;
+				//}
+				return 1;
+			}
+		}
+	#else
+		hf_assert(!"Unsupported platform.");
+	#endif //}
 	return 0;
 }
 

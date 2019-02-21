@@ -41,8 +41,11 @@ bool             hf_RenameFileOrDir( const char* szOldFn, const char* szNewFn );
 bool             hf_StdCopyFile( const char* src, const char* dst, HfIStdCopyFile* intrf = 0 );
 void             hf_StdoutBeginRedirect( const char* szFname, size_t flags = 0 );
 void             hf_StdoutEndRedirect();
-bool             hf_ParseSimpleIniFile_1( const char* szIniFn, std::vector<std::pair<std::string,std::string> >& outp );
+//bool           hf_ParseSimpleIniFile_1( const char* szIniFn, std::vector<std::pair<std::string,std::string> >& outp );
 bool             hf_GetCommandLineSOSpec( std::vector<std::string>& outp, uint32_t uPid );
+std::string      hf_getcwd();
+std::string      hf_getHomeDir();
+bool             hf_ClearLibFromLdPreloadEnv( void* pAnySymbol );
 
 //template<typename T>
 //bool hf_ParseSimpleIniFile( const char* szIniFn, T& outp );

@@ -10,7 +10,7 @@
 
 	\section intro_sec Introduction
 
-	This library provides basic routines for working with strings, text,
+	A library that provides basic routines for working with strings, text,
 	binary files, etc.\n
 	All code is in the \ref hef "hef namespace".\n
 
@@ -26,7 +26,8 @@ namespace hef{
 ;
 
 /// Flags for hf_PutFileBytes().
-enum { EPFBF_NOFLAGS=0, EPFBF_APPEND=0x1, };
+/// old: EPFBF_NOFLAGS
+enum { HF_EPFBF_NOFLAGS=0, HF_EPFBF_APPEND=0x1, };
 
 // library functions #1.
 std::string      hf_dataToHexViewAsLines( const void* data, size_t size, size_t uLineLen=8, const char* szNewline="\n", const char* szEachLinePrefix="", const char szFillerHex[3]="..", const char szFillerChar[2]=" " );
@@ -36,15 +37,18 @@ size_t           hf_ConvertBytesArrayToU32LE( void* addrArray4 );
 size_t           hf_ReadFileU32LE( FILE* fp, size_t addrInFile );
 std::vector<uint8_t> hf_ReadFileBytes( FILE* fp, size_t addrInFile, size_t numBytes );
 bool             hf_WriteFileBytes( FILE* fp, size_t addrInFile, const void* bytes, size_t size );
-bool             hf_PutFileBytes( const char* fn, const void* bytes, int size = -1, size_t flags = EPFBF_NOFLAGS );
+bool             hf_PutFileBytes( const char* fn, const void* bytes, int size = -1, size_t flags = HF_EPFBF_NOFLAGS );
 std::string      hf_hexEncode( const void* data, uint32_t size );
 std::vector<uint8_t> hf_hexDecode( const char* str, int len = -1 );
 std::string      hf_PercentEncode( const char* inp, int num = -1, const char* szAllowed="" );
 std::string      hf_convCompilerDateYMD( const char* szUudateuu, const char* fmt, int* y=0, int* m=0, int* d=0 );
 uint32_t         hf_getGlobalTicks();
+uint64_t         hf_getTimeTicksMs();
+
 
 std::string hf_strftime2( const char* fmt, const time_t tmx );
 std::string hf_strftime3( const char* fmt, const tm* tmy );
+time_t      hf_mktime2( int nYear, int nMonth, int nDay, int nHour, int nMinute, int nSecond, int nDst = -1 );
 
 /// \cond DOXYGEN_SKIP
 // internal struct for hf_arrayUnionViaVarname() use.
@@ -403,6 +407,7 @@ struct HfPredTTPair{
 		}
 	};
 };
+typedef HfPredTTPair<std::string,std::string> HfPredStrPair;
 
 struct HfSProgressMessage{
 	std::string message;

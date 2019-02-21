@@ -47,10 +47,8 @@ extern "C"{
 class CDCProcRelay : public IProcRelay {
 public:
 	static const char* szInpBoxSmbl;
-	typedef char (*DcPromptBoxProc_t)( const char*, const char*, char MaskInput, char* ioVal, int ValueMaxLen );
 	// uFlags: 0x10 = error icon.
 	static const char* szMsgBoxSmbl;
-	typedef int (*DcMessageBoxProc_t)( const char*, const char*, long uFlags, long );
 	//
 	CDCProcRelay();
 	virtual bool iprSetFilePercentage( const char* szFilename, float fPercentage );
@@ -68,7 +66,9 @@ private:
 	std::vector<std::pair<std::string,std::string> > pwds2;
 	int nMaxPasswords;
 	DcPromptBoxProc_t fncDcPromptBoxProc;
-	DcMessageBoxProc_t fncDcMessageBoxProc;
+	//DcMessageBoxProc_t fncDcMessageBoxProc;
 };
+
+//void wcxi_SafeInitDcInterface();
 
 #endif //_P7U_DC_H_

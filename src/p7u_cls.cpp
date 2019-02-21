@@ -11,7 +11,7 @@
 
 #include "myWindows/StdAfx.h"
 #include "Common/MyInitGuid.h" // must be included once per link, otherwise repeated symbols...
-#include "Windows/DLL.h"
+//#include "Windows/DLL.h"   // NDLL::CLibrary
 #include "Windows/PropVariant.h"
 #include "7zip/Common/FileStreams.h"
 #include "7zip/Archive/IArchive.h"
@@ -32,9 +32,11 @@ typedef char wcxi_assertion_on_type_size_UsdQb00J [ ( sizeof(WCHAR) == 4 ) *2 - 
 
 
 WcxiPlugin*               cPlugin = 0;	// as extern in "p7u_cls.h"
-static NDLL::CLibrary*    lib2 = 0;
+//static NDLL::CLibrary*  lib2 = 0;
+static void*              lib3 = 0;
 static Func_CreateObject  createObjectFunc2 = 0;
 IProcRelay*               cProcRelayIntrf = 0; // initialized in "p7u_cls.cpp"
+IProcRelay*               cProcRelayIntrf2 = 0;
 
 /*
 #include <cstdio>
@@ -51,25 +53,30 @@ class CWCXInFileStream : public CInFileStream
 public:
 	//static int nCntStrm = 0;
 	CWCXInFileStream() {
-		//wcxi_DebugString( HfArgs("nCntStrm: %1").arg( ++nCntStrm ).c_str() );
+		//wcxi_DebugString_( HfArgs("nCntStrm: %1").arg( ++nCntStrm ).c_str() );
 		//int a = MY_VER_MAJOR;
 	}
 	~CWCXInFileStream() {
-		//wcxi_DebugString( HfArgs("~nCntStrm: %1").arg( --nCntStrm ).c_str() );
+		//wcxi_DebugString_( HfArgs("~nCntStrm: %1").arg( --nCntStrm ).c_str() );
 	}
 };
+
+
 
 void fnInit_p7zUsr()
 {
 	std::string str;
 	const char* envv = getenv("P7ZUSRWCX_DEBUG"); //fe. "export P7ZUSRWCX_DEBUG=1"
-	bShowDebug = ( envv && !!atoi(envv) );
+	bShowDebug =  ( (envv && *envv) ? !!atoi(envv) : 0 );
+	bShowDebugIsEnv = ( envv && *envv );
+	wcxi_InitMsgBoxFunction();
 	//
 	DebugLogFile = new std::string;
 	envv = getenv("P7ZUSRWCX_LOGFILE"); //fe. "export P7ZUSRWCX_LOGFILE=../ab/wcx.log"
 	*DebugLogFile = ( envv && *envv ? envv : "" );
 	//
-	wcxi_DebugString( HfArgs("fnInit_p7zUsr, pid:%1").arg((int)getpid()).c_str() );
+	wcxi_DebugString( HfArgs("P7z Usr initializing, pid:%1").arg((int)getpid()).c_str(),
+			WCXI_DSShowAlways );
 
 	wcxi_DebugString( HfArgs("P7Zip C headers, version: [%1]")
 			.arg( (const char*)P7ZIP_VERSION )
@@ -107,20 +114,20 @@ void fnInit_p7zUsr()
 		strIni = HfArgs("%1/p7z_usr.ini").arg( hf_dirname(SelfWcxFile->c_str()).c_str()).c_str();
 	}
 	if( !hf_FileExists( Str7zSoFile->c_str() ) ){
-		wcxi_DebugString( HfArgs("ERROR: 7-zip library file not found. [%1]").arg(Str7zSoFile->c_str()).c_str() );
+		wcxi_DebugString( HfArgs("ERROR: 7-zip library file not found. [%1]").arg(Str7zSoFile->c_str()).c_str(),
+				WCXI_DSShowAlways|WCXI_DSMsgBox|WCXI_DSAddExitNowMBText );
 		hf_assert(0);
 	}
-	hf_assert( !lib2 );
-	lib2 = new NDLL::CLibrary;
-	std::basic_string<wchar_t> strSoFile2;
-	hf_Utf8DecodeToAny( Str7zSoFile->c_str(), -1, strSoFile2, 0 );
-	if( !lib2->Load( strSoFile2.c_str() ) ){
-		wcxi_DebugString( HfArgs("ERROR: Can not load 7-zip library. [%1]").arg(Str7zSoFile->c_str()).c_str() );
+	hf_assert( !lib3 );
+	if(!(lib3 = dlopen( Str7zSoFile->c_str(), RTLD_LAZY ))){
+		wcxi_DebugString( HfArgs("ERROR: Can not load 7-zip library. [%1]").arg(Str7zSoFile->c_str()).c_str(),
+				WCXI_DSShowAlways|WCXI_DSMsgBox|WCXI_DSAddExitNowMBText );
 		hf_assert(0);
 	}
 	hf_assert( !createObjectFunc2 );
-	if( !( createObjectFunc2 = (Func_CreateObject)lib2->GetProc("CreateObject") ) ){
-		wcxi_DebugString("ERROR: Can not get 'CreateObject' function [cIlwn5z]");
+	if( !( createObjectFunc2 = (Func_CreateObject) dlsym(lib3,"CreateObject") ) ){
+		wcxi_DebugString("ERROR: Can not get 'CreateObject' function [eq0B4ig]",
+				WCXI_DSShowAlways|WCXI_DSMsgBox|WCXI_DSAddExitNowMBText );
 		hf_assert(0);
 	}
 	hf_assert( !cPlugin );
@@ -146,7 +153,7 @@ WcxiPlugin::WcxiPlugin( const char* szIni )
 
 	hf_ParseSimpleIniFile( strIni2.c_str(), vars );
 	wcxi_DebugString( HfArgs("INI parse, n-vars: %1").arg((int)vars.size()).c_str() );
-	if( !bShowDebug ){
+	if( !bShowDebugIsEnv ){
 		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("bShowDebug") );
 		bShowDebug = ( a != vars.end() ? !!atoi(a->second.c_str()) : bShowDebug );
 	}
@@ -257,9 +264,13 @@ void fnDeinit()
 		delete Str7zSoFile;
 		Str7zSoFile = 0;
 	}
-	if( lib2 ){
-		delete lib2;
-		lib2 = 0;
+//	if( lib2 ){
+//		delete lib2;
+//		lib2 = 0;
+//	}
+	if( lib3 ){
+		dlclose(lib3);
+		lib3 = 0;
 	}
 	if( cPlugin ){
 		delete cPlugin;
@@ -277,10 +288,10 @@ class CArcOpenCalb
 {
 public:
 	CArcOpenCalb( const char* szArcFnm_ ) : bAskedPassword(0), strArcFnm(szArcFnm_) {
-		//wcxi_DebugString( HfArgs("CArcOpenCalb() n:%1").arg( ++uAocRefcnt ).c_str() );
+		//wcxi_DebugString_( HfArgs("CArcOpenCalb() n:%1").arg( ++uAocRefcnt ).c_str() );
 	}
 	virtual ~CArcOpenCalb(){
-		//wcxi_DebugString( HfArgs("~CArcOpenCalb() n:%1").arg( --uAocRefcnt ).c_str() );
+		//wcxi_DebugString_( HfArgs("~CArcOpenCalb() n:%1").arg( --uAocRefcnt ).c_str() );
 	}
 	MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
 	//
@@ -477,8 +488,11 @@ bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 		return 0;
 	}
 	CMyComPtr<IInArchive>* archive2 = (CMyComPtr<IInArchive>*)soa3->archive3;
-	hf_assert( archive2 );
-
+	//hf_assert_( archive2 );
+	if(!archive2){
+		shd.eError = WCXI_EBadData;
+		return 0;
+	}
 	NCOM::CPropVariant propFn, propIsDir, prop;
 	std::string str; UString str2; std::basic_string<wchar_t> strFnWBfr;
 
@@ -522,20 +536,22 @@ bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 }
 void WcxiPlugin::updateArcHandlers()
 {
-	hf_assert(lib2);
-	Func_GetNumberOfFormats fnGnof = (Func_GetNumberOfFormats)lib2->GetProc("GetNumberOfFormats");
-	Func_GetHandlerProperty2 fnGhp2 = (Func_GetHandlerProperty2)lib2->GetProc("GetHandlerProperty2");
+	hf_assert(lib3);
+	Func_GetNumberOfFormats fnGnof = (Func_GetNumberOfFormats) dlsym( lib3, "GetNumberOfFormats" );
+	Func_GetHandlerProperty2 fnGhp2 = (Func_GetHandlerProperty2) dlsym( lib3, "GetHandlerProperty2" );
 	UInt32 nNumFmts = 0;
 	fnGnof( &nNumFmts );
 
 	std::string str;
 	UString strUc; NCOM::CPropVariant prop;
+	std::basic_string<wchar_t> dmy0;
+
 	for( uint32_t i = 0; i < nNumFmts; i++ ){
 		SArcHandler sah;
 		prop.Clear();
 		fnGhp2( i, NArchive::NHandlerPropID::kName, &prop );
-		hf_assert(prop.bstrVal);
-		strUc = prop.bstrVal;
+		//hf_assert(prop.bstrVal);
+		strUc = ( prop.bstrVal ? prop.bstrVal : dmy0.c_str() );
 		hf_Utf8EncodeFromAny( strUc.Ptr(), strUc.Len(), &sah.name2, 0 );
 
 		prop.Clear();
@@ -556,8 +572,8 @@ void WcxiPlugin::updateArcHandlers()
 		}
 		prop.Clear();
 		fnGhp2( i, NArchive::NHandlerPropID::kClassID, &prop );
-		hf_assert(prop.bstrVal);
-		const GUID* guid3 = (const GUID*)prop.bstrVal;  // GUID: "CPP/Common/MyGuidDef.h"
+		//hf_assert(prop.bstrVal); // GUID: "CPP/Common/MyGuidDef.h"
+		const GUID* guid3 = (const GUID*)( prop.bstrVal ? prop.bstrVal : dmy0.c_str() );
 		sah.guid2.resize( sizeof(*guid3), 0 );
 		memcpy( &sah.guid2[0], guid3, sizeof(*guid3) );
 
@@ -630,7 +646,7 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 	std::string str, strFnmRl;
 	uScanSize4 = ( uScanSize4 ? uScanSize4 : uCYHTFScanSize );
 	hf_assert(cPlugin);
-	hf_assert(lib2);
+	hf_assert(lib3);
 	sLastCyhtf.clear2();
 	if( !szFileName || !*szFileName )
 		return 0;

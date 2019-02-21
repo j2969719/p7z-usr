@@ -238,13 +238,13 @@ bool hf_WriteFileBytes( FILE* fp, size_t addrInFile, const void* bytes, size_t s
 /// Writes file bytes by either replacing entire contents or appending data at end of file.
 /// \param fn - File name.
 /// \param bytes - Pointer to data.
-/// \param size - Size of data in bytes. If set to -1 then data is assumed to be C-string.
-/// \param flags - See \ref EPFBF_NOFLAGS.
+/// \param size - Size of data in bytes. If set to -1 then data is assumed to be the C-string.
+/// \param flags - See \ref HF_EPFBF_NOFLAGS.
 /// \sa GP_rw_file_contents
 bool hf_PutFileBytes( const char* fn, const void* bytes, int size, size_t flags )
 {
 	FILE* fp2 = 0;
-	if( flags & EPFBF_APPEND ){
+	if( flags & HF_EPFBF_APPEND ){
 		fp2 = fopen( fn, "ab" );
 	}else{
 		fp2 = fopen( fn, "wb" );
@@ -284,6 +284,7 @@ hf_StrPrintU64( uint64_t inp, uint32_t uBase, uint32_t uDigitGrouping, const cha
 	char bfr[128];
 	int digit_grouping = (int)uDigitGrouping;
 	digit_grouping = digit_grouping ? digit_grouping : 3;
+	szGlue = (szGlue ? szGlue : "");
 
 	_hf_sprintUT<uint64_t>( inp, bfr, szGlue, uBase, digit_grouping,
 				uLeadingCharsCount,
@@ -336,6 +337,7 @@ std::string hf_StrPrintS64( int64_t inp, uint32_t base, uint32_t uDigitGrouping,
                            char leading_char )
 {
 	char bfr[128];
+	szGlue = ( szGlue ? szGlue : "" );
 	int digit_grouping = (int)uDigitGrouping;
 	digit_grouping = digit_grouping ? digit_grouping : 3;
 	bool bMinus = inp < 0;
@@ -607,12 +609,40 @@ uint32_t hf_getGlobalTicks()
 		// reference:
 		// .../SDL/src/timer/unix/SDL_systimer.c
 		// http://pubs.opengroup.org/onlinepubs/000095399/functions/gettimeofday.html
-		timeval tv;
-
-		gettimeofday(&tv, 0);
-		uint32_t ticksx = (uint32_t)( (tv.tv_sec * 1000) + (tv.tv_usec / 1000) );
+		timeval tvx;
+		gettimeofday(&tvx, 0);
+		uint32_t ticksx = (uint32_t)( (tvx.tv_sec * 1000) + (tvx.tv_usec / 1000) );
 		return ticksx;
-#	endif
+#	endif //_HF_TIMEOUT_SRV_WIN32
+}
+/**
+	Returns UTC ticks in miliseconds.
+	Equivalent of time(0) but with miliseconds resolution instead.
+	\code
+		// To convert to date string use retval divided by 1000.
+		uint64_t tm4 = hf_getTimeTicksMs();
+		time_t tm2 = (time_t)( tm4 / 1000 );
+		const tm* tm3 = localtime( &tm2 );
+		strftime( bfr, sizeof(bfr), "%Y-%m-%d/%H:%M:%S", tm3 );
+	\endcode
+*/
+uint64_t hf_getTimeTicksMs()
+{
+#	ifdef _HF_TIMEOUT_SRV_WIN32
+		hf_assert(!"hf_getTimeTicksMs() WIN32 not implemented.");
+		return 0;
+#	else
+		//#include <sys/time.h>
+		// A time value that is accurate to the nearest
+		// microsecond but also has a range of years.
+		//struct timeval:
+		//	__time_t tv_sec;		// Seconds.
+		//	__suseconds_t tv_usec;	// Microseconds.
+		timeval tvx;
+		gettimeofday(&tvx, 0);
+		uint64_t tmticks = ( ((uint64_t)tvx.tv_sec) * 1000 + (tvx.tv_usec / 1000) );
+		return tmticks;
+#	endif //_HF_TIMEOUT_SRV_WIN32
 }
 
 /// \cond //DOXYGEN_SKIP //{
@@ -892,8 +922,9 @@ bool hf_SaveUncompressedTGA( const char* filename, uint16_t nWidth, uint16_t nHe
 	String prints local time.
 	Based on C functions strftime() and localtime().
 	\param fmt - format string, fe."%H:%M:%S".
-	\param tmx - optional input timestamp. if 0, current time is used (call time(0)).
-	WARNING: this implementation has a 128 characters limit for output string.
+	\param tmx - optional input timestamp. if 0, current time is used (calls time(0)).
+	NOTE: This implementation has a 128 characters limit for output string.
+		  Nontheless, using even up to 4 extra characters per each component should be ok.
 	\sa GP_strftime_etc
 */
 std::string hf_strftime2( const char* fmt, const time_t tmx )
@@ -914,6 +945,33 @@ std::string hf_strftime3( const char* fmt, const tm* tmy )
 	}
 	strftime( bfr, sizeof(bfr), fmt, tmy );
 	return bfr;
+}
+
+/**
+	Outputs UTC timestamp in seconds given Y,M,D,H,mm and S.
+	nYear   - year, fe: 1999.
+	nMonth  - months since January – [1, 12].
+	nDay    - day of the month – [1, 31].
+	nHour   - hours since midnight – [0, 23].
+	nMinute - minutes after the hour – [0, 59].
+	nSecond - seconds after the minute - [0, 60].
+	nDst    - Daylight Saving Time flag. The value is positive if DST is in effect, zero if not and negative if no information is available.
+*/
+time_t hf_mktime2( int nYear, int nMonth, int nDay, int nHour, int nMinute, int nSecond, int nDst )
+{
+	struct tm tm2;
+	memset( &tm2, 0, sizeof(tm2) );
+	tm2.tm_year  = nYear - 1900;
+	tm2.tm_mon   = nMonth - 1;
+	tm2.tm_mday  = nDay;
+	tm2.tm_hour  = nHour;
+	tm2.tm_min   = nMinute;
+	tm2.tm_sec   = nSecond;
+	tm2.tm_isdst = nDst;
+	tm2.tm_wday  = 0;
+	tm2.tm_yday  = 0;
+	time_t tst2 = mktime( &tm2 );
+	return tst2;
 }
 
 } // end namespace hef

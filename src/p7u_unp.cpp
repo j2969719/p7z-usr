@@ -30,7 +30,10 @@ uint64_t WcxiPlugin::
 getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const
 {
 	CMyComPtr<IInArchive>* archive2 = (CMyComPtr<IInArchive>*)soa->archive3;
-	hf_assert( archive2 );
+	//hf_assert( archive2 );
+	if(!archive2){
+		return 0;
+	}
 	std::vector<SFi>::iterator a;
 	NCOM::CPropVariant prop; uint64_t uSizeSum = 0;
 	std::sort( soa->lsExtr2.begin(), soa->lsExtr2.end(), SFi::CmpByItem() );
@@ -135,7 +138,12 @@ bool WcxiPlugin::extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3, std::
 	// x::Extract(const UInt32* indices, UInt32 numItems,
 	//     Int32 testMode, IArchiveExtractCallback *extractCallback)
 	CMyComPtr<IInArchive>* archive5 = (CMyComPtr<IInArchive>*)soa->archive3;
-	hf_assert( archive5 );
+	//hf_assert( archive5 );
+	if(!archive5){
+		*eError3 = WCXI_EBadData;
+		*err2    = "Bad internal archive structure.";
+		return 0;
+	}
 	CArcExtractCalb* cAec = new CArcExtractCalb( *archive5, &soa->lsExtr2, soa );
 	// fix for the unknown-interface, cryptic... no way to deal with it...
 	for( size_t i=0; i < idxsOrd.size(); i++ )

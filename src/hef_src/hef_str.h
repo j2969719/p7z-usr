@@ -4,12 +4,20 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stdint.h> //uint64_t
 namespace hef{
 ;
 /// \cond DOXYGEN_SKIP //{
 void str_general_tester();
 /// \endcond //DOXYGEN_SKIP //}
 ;
+
+// Function prototypes.
+bool hf_isAlpha( int in );
+bool hf_isAlphanum( int in );
+void hf_ConvertCrLfToLf( std::vector<unsigned char>* data2 );
+bool hf_GetTimeHMSMsFromStr( const char* inp, int* hr2, int* mn2, int* sc2, int* ms2, int flags2, const char** endp );
+void hf_TimeMsecsDecomposeToHMSMs( uint64_t inp, int* hr3, int* mn3, int* sc3, int* ms3 );
 
 /// Determines length of c-string (null-terminated string).
 template<class T>
@@ -77,6 +85,15 @@ const T* hf_strspn( const T* str1, const T* str2 )
 				return a;
 	return 0;
 }
+
+enum{
+	/// Flags for hf_GetTimeHMSMsFromStr().
+	HF_EGHMS2_MilisecsRequired = 0x1,
+	HF_EGHMS2_SecondsRequired = 0x2,
+	HF_EGHMS2_MinutesRequired = 0x4,
+	HF_EGHMS2_HoursRequired = 0x8,
+	HF_EGHMS2_NoBoundaryCheck = 0x10,
+};
 
 /**
 	\defgroup GP_strtrims String trim functions
@@ -184,6 +201,7 @@ std::basic_string<T> hf_trim_stdstring( const T* in, const T* whitespacescharset
 	hf_strstrnn() \n
 	hf_StrCmpPred() \n
 	hf_strEndsWith() \n
+	hf_strBeginsWith() \n
 	HfCStrPiece::equalTo() \n
 	HfCStrPiece::find() \n
 	HfCStrPiece::strpos() \n
@@ -230,7 +248,6 @@ public:
 };
 /// \endcond //DOXYGEN_SKIP //}
 ;
-
 
 /// String comparison with predicate class.
 /// \sa GP_strcmp_funcs
@@ -342,10 +359,10 @@ const T* hf_strstrnn( const T* str1, size_t len1, const T* str2, size_t len2,
 /// Checks whenever input c-string ends with specified c-string.
 /// \sa GP_strcmp_funcs
 template<class T>
-bool hf_strEndsWith( const T* inp, const T* ending, bool bCaseInsensitive=0,
+bool hf_strEndsWith( const T* inp, const T* needle2, bool bCaseInsensitive=0,
 					int maxlen=-1 )
 {
-	int ln2 = hf_strlen( ending );
+	int ln2 = hf_strlen( needle2 );
 	int ln3 = hf_strlen( inp );
 	if( maxlen >=0 && ln2 >= maxlen )
 		ln2 = maxlen;
@@ -353,10 +370,38 @@ bool hf_strEndsWith( const T* inp, const T* ending, bool bCaseInsensitive=0,
 		if( !ln3-- )
 			return 0;
 		if( bCaseInsensitive ){
-			if( hf_strcasecmp( &inp[ln3], &ending[ln2], 1 ) )
+			if( hf_strcasecmp( &inp[ln3], &needle2[ln2], 1 ) )
 				return 0;
 		}else{
-			if( inp[ln3] != ending[ln2] )
+			if( inp[ln3] != needle2[ln2] )
+				return 0;
+		}
+	}
+	return 1;
+}
+/**
+	Checks if input string begins with another string.
+	\param inp - input string
+	\param len2 - length or -1 for auto.
+	\param needle2 - string to check.
+	\param len3 - length or -1 for auto.
+	\param bCaseInsensitive - set to 1 to use ANSI case insensitive mode.
+*/
+template<class T>
+bool hf_strBeginsWith( const T* inp, int len2, const T* needle2, int len3 = -1,
+						bool bCaseInsensitive=0 )
+{
+	len2 = ( len2 != -1 ? len2 : hf_strlen( inp ) );
+	len3 = ( len3 != -1 ? len3 : hf_strlen( needle2 ) );
+	if( len2 < len3 )
+		return 0;
+	int i;
+	for( i=0; i<len3; i++ ){
+		if( bCaseInsensitive ){
+			if( hf_strcasecmp( &inp[i], &needle2[i], 1 ) )
+				return 0;
+		}else{
+			if( inp[i] != needle2[i] )
 				return 0;
 		}
 	}
@@ -463,6 +508,9 @@ std::basic_string<T> hf_substr( const T* in, int start,
 	HfCStrPiece::piecesToPath() \n
 	hf_PathTruncateLeftSide() \n
 	hf_ltruncate_path() \n
+	hf_getcwd() \n
+	hf_GetRelativePath() \n
+	hf_getHomeDir() \n
 */
 ;
 /// Converts multibyte c-string to any template specific c-string.
@@ -471,8 +519,6 @@ template<class T>
 std::basic_string<T> hf_anyStr( const char* in, int size = -1 )
 {
 	std::basic_string<T> out;
-//	for(; *in; in++ )
-//		out += (T)*in;
 	int i, size2 = size<0 ? (int)hf_strlen(in) : size;
 	for( i=0; i<size2; i++ )
 		out += (T)( in[i] );
@@ -627,8 +673,7 @@ const T* hf_basename( const T* inp, const T** extOu=0 )
 	return inp;
 }
 
-bool hf_isAlpha( int in );
-bool hf_isAlphanum( int in );
+
 
 /// Flags for hf_basename2().
 enum {
@@ -934,13 +979,14 @@ typedef HfSCmdNames<char> HfScn;
 
 /// Retrieves value of command line parameter given 'argc' and 'argv'.
 /// Comparision is case insensitive.
-/// Returns value of specified command line parameter or empty string.
+/// Returns value of specified command line parameter or empty string
+/// (or default if specified by 'szDflt').
 /// \param flags2 - flags fe. \ref EGCLPF_NOFLAGS.
 /// \sa EGCLPF_NOFLAGS
 /// \sa GP_cmd_line_args
 template<class T> std::basic_string<T>
 hf_getCommandLineParameter( const T* name, int argc, const T*const* argv,
-                        int flags2 = EGCLPF_NOFLAGS )
+                        int flags2 = EGCLPF_NOFLAGS, const T* szDflt=0 )
 {
 	bool match2 = 0;
 	int i = 0;
@@ -965,7 +1011,7 @@ hf_getCommandLineParameter( const T* name, int argc, const T*const* argv,
 				return hf_anyStr<T>("");
 		}
 	}
-	return hf_anyStr<T>("");
+	return ( szDflt ? szDflt : hf_anyStr<T>("") );
 }
 /// Multiple parameter name version of hf_getCommandLineParameter().
 /// \param flags2 - flags fe. \ref EGCLPF_NOFLAGS.
@@ -1100,12 +1146,6 @@ std::basic_string<T> hf_generateStr( const T* in, int num )
 		z += in;
 	return z;
 }
-
-/*
-	NOTE: explode()- and implode()-like functions were moved
-	      into string-piece header file.
-		  see: HfCStrPiece::implode(), HfCStrPiece::pathToPieces(), ...
-*/
 
 /// Truncates path from left side, either or both by number of characters or
 /// number of path parts.
@@ -1282,21 +1322,6 @@ hf_strreplace( const T* szSearch, const T* szRepl, const T* szSubject, int nLimi
 	return outp;
 }
 
-/*template<class T>
-class HfCCharAsteeriskEtcPred : public HfICharPredicate<T> {
-public:
-	const T* questionmc;
-	virtual bool lessThan( const T& a, const T& b )const{
-		return a < b;
-	}
-	virtual bool equal( const T& a, const T& b )const{
-		if( b == *questionmc )
-			return 1;
-		return a == b;
-	}
-};//*/
-
-
 enum{
 	/// Flags for hf_strcmp_qm().
 	/// Makes comparision case insensitive  (ANSI only).
@@ -1405,7 +1430,7 @@ hf_MatchStrSimple( const T* inp, const T* ptrn_str, const T* astchars )
 	if( !*ptrn_str )
 		return 0;
 	static const T spcchrs2[] = { (T)'*', (T)'?', 0, };
-	bool bLeadingAst, bLastPtrn; const T* sz2;
+	bool bLeadingAst, bLastPtrn;
 	astchars = ( astchars ? astchars : spcchrs2 );
 	if( *ptrn_str == *astchars && *astchars && !ptrn_str[1] ) // quick handling if pattern is set to "*".
 		return 1;
@@ -1462,6 +1487,194 @@ hf_MatchStrSimple( const T* inp, const T* ptrn_str, const T* astchars )
 			return 1;
 	}
 	return !*inp;
+}
+
+/// Flags for hf_StrPrintTable().
+enum{
+	/// Denotes that first row element is a row of column titles.
+	/// Additionally, separator row is also inserted below.
+	HF_ESPT_CaptsEl0 = 0x1,
+};
+/**
+	Strin ptints table given 2-dimensional container.
+
+	\param inp          - Input table. inner element must be of type: "std::basic_string<T>".
+	\param flags2       - Flags, fe \ref HF_ESPT_CaptsEl0.
+	\param arSpcDashBar - Optional, array of 3 characters: space, dash and bar ("\x20-|").
+	                      If present, must point to array of at least 3 elements.
+	                      Fe. to turn off bar character, pass c-string: "\0\0\0".
+	\param szNl         - Optional, newline c-string. Default is "\n".
+	\param calbStrlen   - Optional callback for string length, fe. for UTF-8 strings.
+	\code
+		// Example:
+		std::vector<std::vector<std::string> > arr;
+		str = hf_StrPrintTable<char>( arr, 0x0, "\0\0|", 0, 0 );
+	\endcode
+*/
+template<class T, class U> std::basic_string<T>
+hf_StrPrintTable( const U& inp, int flags2, const T arSpcDashBar[3], const T* szNl, int(*calbStrlen)(const T*), const T* szIndent )
+{
+	std::basic_string<T> outp, str;
+	typename U::const_iterator a;
+	typename U::value_type::const_iterator b;
+	std::vector<int> maxColLengths;
+	int i,k;
+	const T chSpc  = ( arSpcDashBar && arSpcDashBar[0] ? arSpcDashBar[0] : (T)'\x20' );
+	const T chDash = ( arSpcDashBar && arSpcDashBar[1] ? arSpcDashBar[1] : (T)'-' );
+	const T chBar  = ( arSpcDashBar ? arSpcDashBar[2] : (T)'|' );
+	static const T szNl2[] = { (T)'\n', 0, };
+	szNl = ( szNl ? szNl : szNl2 );
+	for( a = inp.begin(); a != inp.end(); ++a ){
+		for( i=0, b = a->begin(); b != a->end(); ++b, i++ ){
+			if( maxColLengths.size() <= i )
+				maxColLengths.push_back(0);
+			int len = ( calbStrlen ? calbStrlen( b->c_str() ) : b->size() );
+			maxColLengths[i] = std::max<int>( len, maxColLengths[i] );
+		}
+	}
+	for( k=0, a = inp.begin(); a != inp.end(); ++a, k++ ){
+		outp += (szIndent?szIndent:"");
+		for( i=0, b = a->begin(); b != a->end(); ++b, i++ ){
+			int len = ( calbStrlen ? calbStrlen( b->c_str() ) : b->size() );
+			int numPadd = maxColLengths[i] - len;
+			outp += *b;
+			while( numPadd-- )
+				outp.push_back(chSpc);
+			if( !( i+1 == (int)a->size() ) ){ // if not last.
+				outp.push_back(chSpc);
+				if(chBar){
+					outp.push_back(chBar);
+					outp.push_back(chSpc);
+				}
+			}
+		}
+		if( k==0 && flags2 & HF_ESPT_CaptsEl0 ){
+			outp += szNl;
+			outp += (szIndent?szIndent:"");
+			std::vector<int>::const_iterator c;
+			for( i=0, c = maxColLengths.begin(); c != maxColLengths.end(); ++c, i++ ){
+				str.clear();
+				str.resize( *c, chDash );
+				outp += str;
+				if( !(i+1 == (int)maxColLengths.size()) ){ // if not last.
+					outp.push_back(chSpc);
+					if(chBar){
+						outp.push_back(chDash);
+						outp.push_back(chSpc);
+					}
+				}
+			}
+		}
+		outp += szNl;
+	}
+	return outp;
+}
+
+/// Flags for hf_GetRelativePath().
+enum{
+	HF_EGRP_DotMarkIfCwd = 0x1,
+	HF_EGRP_WinMode = 0x2,
+};
+/**
+	Returns relative path given two paths.
+	Double-dot directory names will be used to create path that
+	represent a path as if a person would
+	have to traverse in file manager from dir specified as 'from3'
+	to reach dir 'to3'.
+	The two input paths should not contain any relative dir names
+	like dot or double-dot.
+	Returned path may contain multiple consecutive double-dot entries.
+	\param flags2 - flags, fe. \ref HF_EGRP_WinMode.
+
+	Example:
+	\code
+		struct{
+			const char* a, *b;
+		} ssx[] = {
+			{"/tmp/abc",
+			 "/tmp/abc/xxx/yyy",},
+			 // --> "xxx/yyy"
+			{"/tmp/abc",
+			 "/tmp/abc",},
+			 // --> ""
+			{"/tmp/abc/def/ghi",
+			 "/tmp/abc",},
+			 // --> "../.."
+			{"/tmp/abc/def/ghi",
+			 "/tmp/abc/xxx/yyy",},
+			 // --> "../../xxx/yyy"
+			{"/bin",
+			 "/tmp/abc/xxx/yyy",},
+			 // --> "../tmp/abc/xxx/yyy"
+			{"/",
+			 "/tmp/abc/xxx/yyy",},
+			 // --> "/tmp/abc/xxx/yyy"
+			{"/abc/def/ghi",
+			 "/xxx",},
+			 // --> "../../../xxx"
+			{"/x/y",
+			 "/a/b/c/d",},
+			 // --> ../../a/b/c/d
+			{"c:/abc",
+			 "c:/abc/def",},
+			 // --> ../../a/b/c/d
+			{0,0,},
+		};
+		std::string strRel;
+		for( int i=0; ssx[i].a; i++ ){
+			strRel = hf_GetRelativePath( ssx[i].a, ssx[i].b, 0 );
+			printf("a: [%s]\n", ssx[i].a );
+			printf("b: [%s]\n", ssx[i].b );
+			printf("strRel: [%s]\n", strRel.c_str() );
+		}
+	\endcode
+	\sa GP_dirname_and_fn
+*/
+template<class T>
+std::basic_string<T> hf_GetRelativePath( const T* from3, const T* to3, int flags2 )
+{
+	// TODO: str literals to templ.
+	std::vector<std::basic_string<T> > from2, to2, out2, ar2;
+	bool bAbsPathMode;
+	const T szSl[] = { (T)'/', 0, }, szBsl[] = { (T)'\\',0,};
+	const T szDots[] = { (T)'.', (T)'.', 0, }, szDotSl[] = { (T)'.',(T)'/',0,};
+	{
+		std::basic_string<T> from4, to4;
+		if( flags2 & HF_EGRP_WinMode ){
+			from4 = hf_strreplace( szBsl, szSl, from4.c_str(), -1, 0 );
+			to4   = hf_strreplace( szBsl, szSl, to4.c_str(), -1, 0 );
+		}
+		bAbsPathMode = ( from3[0] == (T)'/' || to3[0] == (T)'/' );
+		from4 = hf_trim_stdstring( from3, szSl );
+		to4   = hf_trim_stdstring( to3, szSl );
+		// must endup with empty array if path is an empty string or is a root dir ("/").
+		if( !from4.empty() )
+			hf_explode<T>( from4.c_str(), szSl, from2 );
+		if( !to4.empty() )
+			hf_explode<T>( to4.c_str(), szSl, to2 );
+	}
+	int i;
+	for( i=0; i < (int)from2.size(); i++ ){
+		if( i == (int)to2.size() || from2[i] != to2[i] )
+			break;
+	}
+	ar2.clear();
+	ar2.resize( ((int)from2.size()) - i, szDots );
+	out2.insert( out2.end(), ar2.begin(), ar2.end() );
+	//
+	typename std::vector<std::basic_string<T> >::iterator a = to2.begin();
+	std::advance( a, i );
+	out2.insert( out2.end(), a, to2.end() );
+	//
+	std::basic_string<T> outp;
+	outp = hf_implode( out2, szSl );
+	outp = hf_rtrim_stdstring( outp.c_str(), szSl );
+	if( bAbsPathMode && !i && !outp.empty() && outp[0] != (T)'/' && outp[0] != (T)'.' ){
+		outp.insert( outp.begin(), (T)'/' );
+	}else if( flags2 & HF_EGRP_DotMarkIfCwd && !outp.empty() && outp[0] != (T)'/' && outp[0] != (T)'.' ){
+		outp = szDotSl + outp;
+	}
+	return outp;
 }
 
 } // end namespace hef
