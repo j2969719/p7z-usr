@@ -27,7 +27,8 @@ Build Instructions
 -------------------------------
 	1. Unpack main P7Z Usr package file ("p7z_usr_xxxxx.zip") into selected directory.
 	2. Download P7ZIP version 15.09. Website: http://p7zip.sourceforge.net/
-	3. Unpack P7ZIP into "./p7zip/p7zip_15x09" subdirectory of P7Z Usr.
+	3. Unpack P7ZIP into "./p7zip/p7zip_15x09", subdirectory of P7Z Usr.
+	   (Actually only ./CPP and ./C subdirectories are required for build process).
 	4. Locate the "makefile" file in "./projects/01_shared_lib" subdir.
 	5. Use this command to compile and build: "make release".
 	6. On successful build, shared lib file "p7z_usr.wcx" will be
@@ -171,3 +172,24 @@ Links
 	http://p7zip.sourceforge.net/
 	http://www.7-zip.org/
 	http://ikk.byethost9.com/
+
+
+Changelog
+---------------
+	v 0.1
+		* first release.
+	
+	v 0.2
+		* Ask password for password protected archives.
+		* Show message box on unpacking error durning close-archive call.
+		* New INI optional configurations
+		* Source code file names re-arrangemed.
+		* About box.
+
+
+
+
+
+
+
+

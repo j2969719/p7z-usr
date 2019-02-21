@@ -1,10 +1,13 @@
 
-#include "7z_wcx3.h"
+#include "p7u_unp.h"
 
-CArcExtractCalb::CArcExtractCalb( IInArchive* archive6_, const std::vector<SFi>* lsFi_ )
+CArcExtractCalb::
+CArcExtractCalb( IInArchive* archive6_, const std::vector<SFi>* lsFi_, wcxi_SOpenedArc* soa_ )
 	: archive6(archive6_), uFsize(0), uFSizeDone(0), uTotalSize(0), uTotalSizeDone(0)
-	, fp2(0), lsFi(lsFi_), eError4(0), uWriStride2(0)
+	, fp2(0), lsFi(lsFi_), eError4(0), uWriStride2(0), soa4(soa_)
 {
+	++uGlobArcExcCalbRefc;
+	wcxi_DebugString(HfArgs("uGlobArcExcCalbRefc: %1").arg( uGlobArcExcCalbRefc ).c_str() );
 	std::vector<SFi>::const_iterator a;
 	for( a = lsFi->begin(); a != lsFi->end(); ++a ){
 		uTotalSize += a->uFsizei;
@@ -13,6 +16,8 @@ CArcExtractCalb::CArcExtractCalb( IInArchive* archive6_, const std::vector<SFi>*
 CArcExtractCalb::~CArcExtractCalb()
 {
 	closeFileIfAny();
+	--uGlobArcExcCalbRefc;
+	wcxi_DebugString(HfArgs("~uGlobArcExcCalbRefc: %1").arg( uGlobArcExcCalbRefc ).c_str() );
 }
 void CArcExtractCalb::closeFileIfAny()
 {
@@ -21,7 +26,8 @@ void CArcExtractCalb::closeFileIfAny()
 		fp2 = 0;
 	}
 }
-uint64_t WcxiPlugin::getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const
+uint64_t WcxiPlugin::
+getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const
 {
 	CMyComPtr<IInArchive>* archive2 = (CMyComPtr<IInArchive>*)soa->archive3;
 	hf_assert( archive2 );
@@ -49,12 +55,14 @@ GetStream( UInt32 index3, ISequentialOutStream** outStream, Int32 askExtractMode
 	hf_assert( a != lsFi->end() );
 	if( hf_FileExists( a->strDstFnmi.c_str() ) ){
 		eError4 = WCXI_EOpen;
+		strErrText = HfArgs("File already exists [%1].").arg( hf_basename(a->strDstFnmi.c_str()) ).c_str();
 		return E_FAIL;
 	}
 	hf_assert( !fp2 );
 	fp2 = fopen( a->strDstFnmi.c_str(), "a+b" );//wb,"a+b"
 	if(!fp2){
 		eError4 = WCXI_EOpen;
+		strErrText = HfArgs("File open failed [%1].").arg( hf_basename(a->strDstFnmi.c_str()) ).c_str();
 		return E_FAIL;
 	}
 	uFsize = a->uFsizei;
@@ -63,7 +71,8 @@ GetStream( UInt32 index3, ISequentialOutStream** outStream, Int32 askExtractMode
 	*outStream = this;
 	return S_OK;
 }
-HRESULT CArcExtractCalb::Write( const void *data2, UInt32 size2, UInt32* processedSize )
+HRESULT CArcExtractCalb::
+Write( const void *data2, UInt32 size2, UInt32* processedSize )
 {
 	hf_assert(fp2);
 	const UInt32 nStride = ( !uWriStride2 ? size2 : uWriStride2 ); //65536
@@ -75,12 +84,14 @@ HRESULT CArcExtractCalb::Write( const void *data2, UInt32 size2, UInt32* process
 		nWri2 = fwrite( data3, 1, nWri, fp2 );
 		if( nWri != nWri2 ){
 			eError4 = WCXI_EWrite; // E_EWRITE
+			strErrText = HfArgs("File write failed [%1].").arg( hf_basename(CurFname.c_str()) ).c_str();
 			return E_FAIL;
 		}
 		uFSizeDone += nWri;
 		float fPerc = ( uFsize ? (float)( (double)uFSizeDone / uFsize ) : 0.33f );
 		if( !cProcRelayIntrf->iprSetFilePercentage( CurFname.c_str(), fPerc ) ){
 			eError4 = WCXI_EUserCancel; // E_EABORTED
+			strErrText = "User cancel.";//HfArgs("User cancel.").arg( hf_basename(CurFname.c_str()) ).c_str();
 			return E_FAIL;
 		}
 		uTotalSizeDone += nWri;
@@ -90,7 +101,31 @@ HRESULT CArcExtractCalb::Write( const void *data2, UInt32 size2, UInt32* process
 	*processedSize = size2;
 	return S_OK;
 }
-bool WcxiPlugin::extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3 )
+HRESULT CArcExtractCalb::CryptoGetTextPassword( BSTR *aPassword )
+{
+	wcxi_DebugString( HfArgs("CArcExtractCalb::CryptoGetTextPassword().").c_str() );
+
+	hf_assert( cProcRelayIntrf );
+	std::string pw2; std::basic_string<wchar_t> pw3; // wchar_t <=> WCHAR
+	if( cProcRelayIntrf->iprTryGetOrAskArcFNPassword( soa4->strArcName.c_str(), &pw2 ) )
+		hf_Utf8DecodeToAny( pw2.c_str(), -1, pw3, 0 );
+
+	//IProcRelay::SMsgBox smb;
+	//smb.capt = "abc";
+	//pw2 = std::string("------ password: ") + pw2.c_str();
+	//smb.msg = pw2.c_str();
+	//cProcRelayIntrf->iprMessageBox(smb);
+
+	HRESULT res = StringToBstr( UString(pw3.c_str()), aPassword );
+	{
+		std::basic_string<wchar_t>::iterator a;
+		for( a = pw3.begin(); a != pw3.end(); ++a )
+			*a = 'x';
+		pw3.clear();
+	}
+	return res;
+}
+bool WcxiPlugin::extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3, std::string* err2 )
 {
 	wcxi_DebugString(HfArgs("extractMultipleFiles(), num:%1")
 		.arg( (int)soa->lsExtr2.size() )
@@ -101,17 +136,36 @@ bool WcxiPlugin::extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3 )
 	//     Int32 testMode, IArchiveExtractCallback *extractCallback)
 	CMyComPtr<IInArchive>* archive5 = (CMyComPtr<IInArchive>*)soa->archive3;
 	hf_assert( archive5 );
-	CArcExtractCalb cAec( *archive5, &soa->lsExtr2 );
-	HRESULT rs2;
-	rs2 = (**archive5).Extract( &idxsOrd[0], (UInt32)idxsOrd.size(), 0, &cAec );
+	CArcExtractCalb* cAec = new CArcExtractCalb( *archive5, &soa->lsExtr2, soa );
+	// fix for the unknown-interface, cryptic... no way to deal with it...
+	for( size_t i=0; i < idxsOrd.size(); i++ )
+		cAec->AddRef();
+	cAec->AddRef();
+	CMyComPtr<IArchiveExtractCallback> cAecCom( cAec );
+	HRESULT rs2; bool bSucc = 1;
+	rs2 = (**archive5).Extract( &idxsOrd[0], (UInt32)idxsOrd.size(), 0, cAecCom );
 	if( rs2 != S_OK ){
 		// WCXI_EBadData = E_BAD_DATA // WCXI_EUserCancel = E_EABORTED
-		*eError3 = cAec.getError();
+		*eError3 = cAec->getError();
 		*eError3 = ( !(*eError3) ? WCXI_EWrite : *eError3 );
-		return 0;
+		*err2 = cAec->ioErrorText();
+		bSucc = 0;
 	}
-	return 1;
+	ULONG num = cAec->Release();
+	for(; num > 1; num-- )
+		cAec->Release();
+	//delete cAec;
+	return bSucc;
 }
+const char* CArcExtractCalb::ioErrorText( const char* inp )
+{
+	if(inp)
+		strErrText = inp;
+	return strErrText.c_str();
+}
+
+
+
 
 
 

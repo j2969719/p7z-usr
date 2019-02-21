@@ -19,7 +19,7 @@
 #include "hef_assert.h"
 namespace hef{
 ;
-/// compile time assertion that ensures  off_t is at least 64-bit long.
+/// GCC compile time assertion that ensures  off_t is at least 64-bit long.
 /// reference: "http://stackoverflow.com/questions/19401887/how-to-check-the-size-of-a-structure-at-compile-time"
 typedef char hf_assertion_on_type_size_01[ ( sizeof(off_t) >= 8 ) *2 - 1 ];
 

@@ -1,9 +1,10 @@
 
-#ifndef _7Z_WCX2_H_
-#define _7Z_WCX2_H_
+#ifndef _P7U_CLS_H_
+#define _P7U_CLS_H_
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include "p7u_cmn.h"
 
 namespace hef{}
 using namespace hef;
@@ -92,21 +93,6 @@ void fnDeinit() __attribute__((destructor));
 std::string wcxi_readlink( const char* szPath, bool bEmptyOnFail );
 std::string wcxi_StripPostTarEtcExts( const char* inp, const SArcHandler* hdlr4 );
 
-struct wcxi_SProcFile{
-	wcxi_SOpenedArc*   arcd2;
-	std::string        strDstFn;
-	int                eError2;
-	wcxi_SProcFile() : arcd2(0), eError2(0) {}
-};
-
-class IProcRelay{
-public:
-	// Return value 0 indicates user cancel via DCMD GUI.
-	// void SetProcessDataProc( HANDLE, tProcessDataProc pProcessDataProc );
-	virtual bool iprSetFilePercentage( const char* szFilename, float fPercentage ) = 0;
-	virtual bool iprSetTotalPercentage( const char* szFilename, float fPercentage ) = 0;
-};
-
 class WcxiPlugin
 {
 public:
@@ -117,11 +103,15 @@ public:
 	bool  canYouHandleThisFile( const char* FileName, const SArcHandler** ouHdlr, uint64_t uScanSize4, const char* szExt );
 	bool  readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd );
 	bool  extractFile2( wcxi_SOpenedArc* soa, uint32_t uCItm, const char* szDstFn );
+	const char* getDcMsgBoxSymbol()const {return strMsgBoxSmn.c_str();}
+	const char* getDcPromptBoxSymbol()const {return strPromptBoxSmn.c_str();}
+	std::string getP7ZIPHeadersVersion()const;
+	std::string getINIConfigFileName()const {return strIni2;}
 private:
 	void updateArcHandlers();
 	void clearArchiveStruct( wcxi_SOpenedArc& inp );
 	std::vector<SArcHandler*> getHandlersForExt( const char* szExt );
-	bool extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3 );
+	bool extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3, std::string* err2 );
 	uint64_t getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const;
 private:
 	struct SCyhtf{
@@ -133,12 +123,13 @@ private:
 	std::vector<SArcHandler> hndlrs2;
 	SCyhtf                   sLastCyhtf;
 	uint32_t                 uArcLastIdent;
-	std::string              strCYHTFHandlersOff;
+	std::string              strCYHTFHandlersOff, strIni2;
 	std::vector<std::string> lsCYHTFHandlersOff;
-	uint64_t uScanSize,      uCYHTFScanSize;
+	uint64_t                 uScanSize, uCYHTFScanSize;
 	bool                     bDoAccessViolationOnCAErr;
+	std::string              strPromptBoxSmn, strMsgBoxSmn;
 };
 extern WcxiPlugin* cPlugin;
 extern IProcRelay* cProcRelayIntrf;
 
-#endif //_7Z_WCX2_H_
+#endif //_P7U_CLS_H_

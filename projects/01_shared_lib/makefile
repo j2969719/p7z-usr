@@ -16,7 +16,7 @@ CFLAGS = -Wall -fPIC -pthread -DENV_UNIX -DUNICODE -D_UNICODE -DUNIX_USE_WIN_FIL
 RESINC = 
 LIBDIR = 
 LIB = 
-LDFLAGS = -ldl -lpthread -fPIC -shared -Wl,--version-script=export_map_gcc.txt -z defs
+LDFLAGS = -ldl -fPIC -shared -Wl,--version-script=export_map_gcc.txt -z defs -lpthread
 
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -g -DDEBUG
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/p7z_usr.wcx
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/src/7z_wcx2.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_DEBUG)/__/__/src/7z_wcx.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_DEBUG)/__/__/src/7z_wcx3.o $(OBJDIR_DEBUG)/__/__/src/7z_wcx_cmn.o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_assert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_utf8_str.o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_str_args.o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_str.o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_file.o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_data.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/src/p7u_cmn.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_assert.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_data.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_file.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str_args.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_utf8_str.o $(OBJDIR_DEBUG)/__/__/src/p7u_cls.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_DEBUG)/__/__/src/p7u_dc.o $(OBJDIR_DEBUG)/__/__/src/p7u_unp.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/src/7z_wcx2.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_RELEASE)/__/__/src/7z_wcx.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_RELEASE)/__/__/src/7z_wcx3.o $(OBJDIR_RELEASE)/__/__/src/7z_wcx_cmn.o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_assert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_utf8_str.o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_str_args.o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_str.o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_file.o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_data.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/src/p7u_cmn.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_assert.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_data.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_file.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str_args.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_utf8_str.o $(OBJDIR_RELEASE)/__/__/src/p7u_cls.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_RELEASE)/__/__/src/p7u_dc.o $(OBJDIR_RELEASE)/__/__/src/p7u_unp.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
 
 all: debug release
 
@@ -51,12 +51,12 @@ clean: clean_debug clean_release
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
 	test -d $(OBJDIR_DEBUG)/__/__/src || mkdir -p $(OBJDIR_DEBUG)/__/__/src
-	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows
+	test -d $(OBJDIR_DEBUG)/__/__/src/hef_src || mkdir -p $(OBJDIR_DEBUG)/__/__/src/hef_src
 	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows
-	test -d $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src || mkdir -p $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src
+	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C
+	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows
 	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common
 	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common
-	test -d $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C || mkdir -p $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C
 
 after_debug: 
 
@@ -65,41 +65,59 @@ debug: before_debug out_debug after_debug
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) -shared $(LIBDIR_DEBUG) $(OBJ_DEBUG)  -o $(OUT_DEBUG) $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-$(OBJDIR_DEBUG)/__/__/src/7z_wcx2.o: ../../src/7z_wcx2.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/7z_wcx2.cpp -o $(OBJDIR_DEBUG)/__/__/src/7z_wcx2.o
+$(OBJDIR_DEBUG)/__/__/src/p7u_cmn.o: ../../src/p7u_cmn.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/p7u_cmn.cpp -o $(OBJDIR_DEBUG)/__/__/src/p7u_cmn.o
 
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o
+$(OBJDIR_DEBUG)/__/__/src/hef_src/hef_assert.o: ../../src/hef_src/hef_assert.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_assert.cpp -o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_assert.o
 
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o
+$(OBJDIR_DEBUG)/__/__/src/hef_src/hef_data.o: ../../src/hef_src/hef_data.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_data.cpp -o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_data.o
 
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o
+$(OBJDIR_DEBUG)/__/__/src/hef_src/hef_file.o: ../../src/hef_src/hef_file.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_file.cpp -o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_file.o
 
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o
+$(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str.o: ../../src/hef_src/hef_str.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_str.cpp -o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str.o
 
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o
+$(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str_args.o: ../../src/hef_src/hef_str_args.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_str_args.cpp -o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str_args.o
+
+$(OBJDIR_DEBUG)/__/__/src/hef_src/hef_utf8_str.o: ../../src/hef_src/hef_utf8_str.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_utf8_str.cpp -o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_utf8_str.o
+
+$(OBJDIR_DEBUG)/__/__/src/p7u_cls.o: ../../src/p7u_cls.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/p7u_cls.cpp -o $(OBJDIR_DEBUG)/__/__/src/p7u_cls.o
 
 $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o: ../../p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o
 
-$(OBJDIR_DEBUG)/__/__/src/7z_wcx.o: ../../src/7z_wcx.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/7z_wcx.cpp -o $(OBJDIR_DEBUG)/__/__/src/7z_wcx.o
+$(OBJDIR_DEBUG)/__/__/src/p7u_dc.o: ../../src/p7u_dc.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/p7u_dc.cpp -o $(OBJDIR_DEBUG)/__/__/src/p7u_dc.o
+
+$(OBJDIR_DEBUG)/__/__/src/p7u_unp.o: ../../src/p7u_unp.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/p7u_unp.cpp -o $(OBJDIR_DEBUG)/__/__/src/p7u_unp.o
+
+$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o: ../../p7zip/p7zip_15x09/C/Threads.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/C/Threads.c -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o
+
+$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o
+
+$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o
+
+$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o
+
+$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o
+
+$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o
 
 $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o
-
-$(OBJDIR_DEBUG)/__/__/src/7z_wcx3.o: ../../src/7z_wcx3.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/7z_wcx3.cpp -o $(OBJDIR_DEBUG)/__/__/src/7z_wcx3.o
-
-$(OBJDIR_DEBUG)/__/__/src/7z_wcx_cmn.o: ../../src/7z_wcx_cmn.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/7z_wcx_cmn.cpp -o $(OBJDIR_DEBUG)/__/__/src/7z_wcx_cmn.o
-
-$(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_assert.o: ../../src/hef_src/hef_assert.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_assert.cpp -o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_assert.o
 
 $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o: ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o
@@ -128,44 +146,26 @@ $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o: ../../p7zip/p7
 $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o: ../../p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
 
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o: ../../p7zip/p7zip_15x09/C/Threads.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/C/Threads.c -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o
-
-$(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_utf8_str.o: ../../src/hef_src/hef_utf8_str.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_utf8_str.cpp -o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_utf8_str.o
-
-$(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_str_args.o: ../../src/hef_src/hef_str_args.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_str_args.cpp -o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_str_args.o
-
-$(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_str.o: ../../src/hef_src/hef_str.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_str.cpp -o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_str.o
-
-$(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_file.o: ../../src/hef_src/hef_file.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_file.cpp -o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_file.o
-
-$(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_data.o: ../../src/hef_src/hef_data.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../src/hef_src/hef_data.cpp -o $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src/hef_data.o
-
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
 	rm -rf $(OBJDIR_DEBUG)/__/__/src
-	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows
+	rm -rf $(OBJDIR_DEBUG)/__/__/src/hef_src
 	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/__/hex_editor_factory/src
+	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C
+	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows
 	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common
 	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common
-	rm -rf $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C
 
 before_release: 
 	test -d bin/Release || mkdir -p bin/Release
 	test -d $(OBJDIR_RELEASE)/__/__/src || mkdir -p $(OBJDIR_RELEASE)/__/__/src
-	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows
+	test -d $(OBJDIR_RELEASE)/__/__/src/hef_src || mkdir -p $(OBJDIR_RELEASE)/__/__/src/hef_src
 	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows
-	test -d $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src || mkdir -p $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src
+	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C
+	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows
 	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common
 	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common
-	test -d $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C || mkdir -p $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C
 
 after_release: 
 
@@ -174,41 +174,59 @@ release: before_release out_release after_release
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) -shared $(LIBDIR_RELEASE) $(OBJ_RELEASE)  -o $(OUT_RELEASE) $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-$(OBJDIR_RELEASE)/__/__/src/7z_wcx2.o: ../../src/7z_wcx2.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/7z_wcx2.cpp -o $(OBJDIR_RELEASE)/__/__/src/7z_wcx2.o
+$(OBJDIR_RELEASE)/__/__/src/p7u_cmn.o: ../../src/p7u_cmn.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/p7u_cmn.cpp -o $(OBJDIR_RELEASE)/__/__/src/p7u_cmn.o
 
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o
+$(OBJDIR_RELEASE)/__/__/src/hef_src/hef_assert.o: ../../src/hef_src/hef_assert.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_assert.cpp -o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_assert.o
 
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o
+$(OBJDIR_RELEASE)/__/__/src/hef_src/hef_data.o: ../../src/hef_src/hef_data.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_data.cpp -o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_data.o
 
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o
+$(OBJDIR_RELEASE)/__/__/src/hef_src/hef_file.o: ../../src/hef_src/hef_file.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_file.cpp -o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_file.o
 
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o
+$(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str.o: ../../src/hef_src/hef_str.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_str.cpp -o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str.o
 
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o
+$(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str_args.o: ../../src/hef_src/hef_str_args.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_str_args.cpp -o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str_args.o
+
+$(OBJDIR_RELEASE)/__/__/src/hef_src/hef_utf8_str.o: ../../src/hef_src/hef_utf8_str.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_utf8_str.cpp -o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_utf8_str.o
+
+$(OBJDIR_RELEASE)/__/__/src/p7u_cls.o: ../../src/p7u_cls.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/p7u_cls.cpp -o $(OBJDIR_RELEASE)/__/__/src/p7u_cls.o
 
 $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o: ../../p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o
 
-$(OBJDIR_RELEASE)/__/__/src/7z_wcx.o: ../../src/7z_wcx.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/7z_wcx.cpp -o $(OBJDIR_RELEASE)/__/__/src/7z_wcx.o
+$(OBJDIR_RELEASE)/__/__/src/p7u_dc.o: ../../src/p7u_dc.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/p7u_dc.cpp -o $(OBJDIR_RELEASE)/__/__/src/p7u_dc.o
+
+$(OBJDIR_RELEASE)/__/__/src/p7u_unp.o: ../../src/p7u_unp.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/p7u_unp.cpp -o $(OBJDIR_RELEASE)/__/__/src/p7u_unp.o
+
+$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o: ../../p7zip/p7zip_15x09/C/Threads.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/C/Threads.c -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o
+
+$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o
+
+$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o: ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/PropVariant.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o
+
+$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileName.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o
+
+$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileIO.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o
+
+$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileFind.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o
 
 $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o
-
-$(OBJDIR_RELEASE)/__/__/src/7z_wcx3.o: ../../src/7z_wcx3.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/7z_wcx3.cpp -o $(OBJDIR_RELEASE)/__/__/src/7z_wcx3.o
-
-$(OBJDIR_RELEASE)/__/__/src/7z_wcx_cmn.o: ../../src/7z_wcx_cmn.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/7z_wcx_cmn.cpp -o $(OBJDIR_RELEASE)/__/__/src/7z_wcx_cmn.o
-
-$(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_assert.o: ../../src/hef_src/hef_assert.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_assert.cpp -o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_assert.o
 
 $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o: ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o
@@ -237,34 +255,16 @@ $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o: ../../p7zip/
 $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o: ../../p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
 
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o: ../../p7zip/p7zip_15x09/C/Threads.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/C/Threads.c -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o
-
-$(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_utf8_str.o: ../../src/hef_src/hef_utf8_str.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_utf8_str.cpp -o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_utf8_str.o
-
-$(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_str_args.o: ../../src/hef_src/hef_str_args.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_str_args.cpp -o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_str_args.o
-
-$(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_str.o: ../../src/hef_src/hef_str.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_str.cpp -o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_str.o
-
-$(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_file.o: ../../src/hef_src/hef_file.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_file.cpp -o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_file.o
-
-$(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_data.o: ../../src/hef_src/hef_data.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../src/hef_src/hef_data.cpp -o $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src/hef_data.o
-
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf bin/Release
 	rm -rf $(OBJDIR_RELEASE)/__/__/src
-	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows
+	rm -rf $(OBJDIR_RELEASE)/__/__/src/hef_src
 	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/__/hex_editor_factory/src
+	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C
+	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows
 	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common
 	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common
-	rm -rf $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release
 

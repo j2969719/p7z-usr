@@ -1,5 +1,5 @@
 
-#include "7z_wcx_cmn.h"
+#include "p7u_cmn.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -13,6 +13,7 @@ bool             bShowDebug = 0;
 std::string*     DebugLogFile = 0;
 std::string*     SelfWcxFile = 0;
 std::string*     Str7zSoFile = 0;
+int              uGlobArcExcCalbRefc = 0;
 
 void wcxi_DebugString( const char* inp )
 {
@@ -27,7 +28,6 @@ void wcxi_DebugString( const char* inp )
 		}
 	}
 }
-
 void wcxi_ConvU64To2xU32( uint64_t inp, uint32_t* uLow, uint32_t* uHi )
 {
 	*uLow = (uint32_t)( inp & 0xFFFFFFFF );
