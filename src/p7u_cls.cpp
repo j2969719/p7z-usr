@@ -10,19 +10,16 @@
 #include <dlfcn.h>
 
 #include "myWindows/StdAfx.h"
-#include "Common/MyInitGuid.h" // must be included once per link, otherwise repeated symbols...
-//#include "Windows/DLL.h"   // NDLL::CLibrary
+#include "Common/MyInitGuid.h" // must be included once per compile, otherwise repeated symbols...
 #include "Windows/PropVariant.h"
-#include "7zip/Common/FileStreams.h"
-#include "7zip/Archive/IArchive.h"
-#include "../C/7zVersion.h"
-#include "7zip/IPassword.h"
+#include "../C/7zVersion.h"  //P7ZIP_VERSION
 
 #include "hef_str.h"
 #include "hef_file.h"
 #include "hef_utf8_str.h"
 #include "hef_str_args.h"
 #include "hef_assert.h"
+#include "p7u_if7.h"
 
 using namespace NWindows;
 
@@ -30,26 +27,10 @@ using namespace NWindows;
 // size of WCHAR must be 2 for DCMD WCX interface and 4 for P7ZIP library.
 typedef char wcxi_assertion_on_type_size_UsdQb00J [ ( sizeof(WCHAR) == 4 ) *2 - 1 ];
 
-
 WcxiPlugin*               cPlugin = 0;	// as extern in "p7u_cls.h"
 static void*              lib3 = 0;
 static Func_CreateObject  createObjectFunc2 = 0;
-IProcRelay*               cProcRelayIntrf = 0; // initialized in "p7u_cls.cpp"
-
-class CWCXInFileStream : public CInFileStream
-{
-public:
-	//static int nCntStrm = 0;
-	CWCXInFileStream() {
-		//wcxi_DebugString_( HfArgs("nCntStrm: %1").arg( ++nCntStrm ).c_str() );
-		//int a = MY_VER_MAJOR;
-	}
-	~CWCXInFileStream() {
-		//wcxi_DebugString_( HfArgs("~nCntStrm: %1").arg( --nCntStrm ).c_str() );
-	}
-};
-
-
+IProcRelay*               cProcRelayIntrf = 0; // initialized in "p7u_cls.cpp". as extern in other places.
 
 void fnInit_p7zUsr()
 {
@@ -127,8 +108,6 @@ WcxiPlugin::WcxiPlugin( const char* szIni )
 	: uArcLastIdent(1000), strCYHTFHandlersOff("Cab,\0""xxxxxxxxxxxxxxxxxxxxx")
 	, uScanSize(1<<23), uCYHTFScanSize(1<<23), bDoAccessViolationOnCAErr(1)
 	, bDisableFileDates(0)
-//	, strPromptBoxSmn("FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-//	, strMsgBoxSmn("FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 {
 	std::string str;
 	strIni2 = wcxi_readlink(szIni,0);
@@ -270,46 +249,6 @@ void fnDeinit()
 	//wcxi_DebugString(HfArgs("deinit uGlobArcExcCalbRefc: %1").arg( uGlobArcExcCalbRefc ).c_str() );
 }
 
-//static int uAocRefcnt = 0;
-class CArcOpenCalb
-	: public IArchiveOpenCallback
-	, public ICryptoGetTextPassword
-	, public CMyUnknownImp
-{
-public:
-	CArcOpenCalb( const char* szArcFnm_ ) : bAskedPassword(0), strArcFnm(szArcFnm_) {
-		//wcxi_DebugString_( HfArgs("CArcOpenCalb() n:%1").arg( ++uAocRefcnt ).c_str() );
-	}
-	virtual ~CArcOpenCalb(){
-		//wcxi_DebugString_( HfArgs("~CArcOpenCalb() n:%1").arg( --uAocRefcnt ).c_str() );
-	}
-	MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
-	//
-	HRESULT SetTotal( const UInt64 *files, const UInt64 *bytes ) {return S_OK;}
-	HRESULT SetCompleted( const UInt64 *files, const UInt64 *bytes ) {return S_OK;}
-	// ICryptoGetTextPassword
-	//STDMETHOD (CryptoGetTextPassword)( BSTR *aPassword )
-	HRESULT CryptoGetTextPassword( BSTR *aPassword ){
-		wcxi_DebugString( HfArgs("CArcOpenCalb::CryptoGetTextPassword().").c_str() );
-		bAskedPassword = 1;
-
-		hf_assert( cProcRelayIntrf );
-		std::string pw2; std::basic_string<wchar_t> pw3; // wchar_t <=> WCHAR
-		if( cProcRelayIntrf->iprTryGetOrAskArcFNPassword( strArcFnm.c_str(), &pw2 ) )
-			hf_Utf8DecodeToAny( pw2.c_str(), -1, pw3, 0 );
-		HRESULT res = StringToBstr( UString(pw3.c_str()), aPassword );
-		{
-			std::basic_string<wchar_t>::iterator a;
-			for( a = pw3.begin(); a != pw3.end(); ++a )
-				*a = 'x';
-			pw3.clear();
-		}
-		return res;
-	}
-	bool bAskedPassword;
-private:
-	std::string strArcFnm;
-};
 
 void WcxiPlugin::clearArchiveStruct( wcxi_SOpenedArc& inp )
 {
@@ -350,7 +289,7 @@ bool WcxiPlugin::closeArchive( void* hArcData, int* err )
 	if( bDoAccessViolationOnCAErr && !retv && !bPreventAccVio ){
 		// This is a workaround method to indicate that error happened durning archive
 		// extract process.
-		// currently DCMD doesnt report any errors returned by the CloseArchive().
+		// currently DCMD doesn't report any errors returned by the CloseArchive()
 		// generate Access Violation error by an arbitrary attempt of writing
 		// integer value at address 0.
 		wcxi_DebugString( HfArgs(
@@ -361,108 +300,6 @@ bool WcxiPlugin::closeArchive( void* hArcData, int* err )
 		*((int*)0) = 1;
 	}
 	return retv;
-}
-void* WcxiPlugin::openArchive( wcxi_OpenArchiveData& acd )
-{
-	hf_assert( createObjectFunc2 );
-	std::string str, strFnmRl2;
-	wcxi_SOpenedArc soa;
-	soa.ident      = ++uArcLastIdent;
-	soa.verify2    = ~soa.ident;
-	soa.strArcName = acd.szArcName;
-
-	if( !(str = wcxi_readlink( acd.szArcName, 0 )).empty() ){
-		strFnmRl2 = str;
-	}else{
-		strFnmRl2 = acd.szArcName;
-	}
-	UInt64 uScanSize3 = uScanSize;
-	const SArcHandler* hdlr = 0;
-	if( soa.strArcName == sLastCyhtf.strArcFn ){
-		hf_assert( sLastCyhtf.hdlr2 );
-		hdlr = sLastCyhtf.hdlr2;
-		uScanSize3 = uCYHTFScanSize;
-		//sLastCyhtf.clear2();
-	}else{
-		sLastCyhtf.clear2();
-		uScanSize3 = uScanSize;
-		std::string ext4 = hf_basename3( acd.szArcName ).second;
-		if( !canYouHandleThisFile( soa.strArcName.c_str(), &hdlr, uScanSize3, ext4.c_str() ) ){
-			wcxi_DebugString( HfArgs("NOTE: No handler for archive: [.../%1]. [aY0lZRW]")
-					.arg( hf_basename(acd.szArcName) ).c_str() );
-			clearArchiveStruct( soa );
-			acd.eOpenResult = WCXI_EUnknownFormat;
-			return 0;
-		}
-	}
-	if(!hdlr){
-		wcxi_DebugString( HfArgs("ERROR: No handler for archive: [.../%1]. [WmqBeAy]")
-				.arg( hf_basename(acd.szArcName) ).c_str() );
-		clearArchiveStruct( soa );
-		acd.eOpenResult = WCXI_EUnknownFormat;
-		return 0;
-	}
-	soa.hdlr3 = hdlr;
-	CWCXInFileStream* fileSpec = new CWCXInFileStream;
-	std::basic_string<wchar_t> strUc;
-	hf_Utf8DecodeToAny( strFnmRl2.c_str(), -1, strUc, 0 );
-
-	if( !fileSpec->Open( FString(strUc.c_str()) ) ){
-		wcxi_DebugString( HfArgs("ERROR: Can not open archive file: [%1] [UNkxd1]").arg(acd.szArcName).c_str() );
-		clearArchiveStruct( soa );
-		delete fileSpec;
-		acd.eOpenResult = WCXI_EOpen; //E_EOPEN
-		return 0;
-	}
-	CMyComPtr<IInArchive>* archive2 = new CMyComPtr<IInArchive>;
-	soa.archive3 = archive2;//&CLSID_Format
-	if( createObjectFunc2( (GUID*)(&hdlr->guid2[0]), &IID_IInArchive, (void**)&(*archive2) ) != S_OK ){
-		wcxi_DebugString("ERROR: Can not get class object. [gKIBoR1f]");
-		clearArchiveStruct( soa );
-		delete fileSpec;
-		acd.eOpenResult = WCXI_EUnknownFormat;
-		return 0;
-	}
-	CMyComPtr<IInStream> file2( fileSpec );
-	CArcOpenCalb* cAoc = new CArcOpenCalb( soa.strArcName.c_str() );
-	//
-	CMyComPtr<IArchiveOpenCallback> cAocCom2( cAoc );
-	if( (**archive2).Open( file2, &uScanSize3, cAocCom2 ) != S_OK ){
-		wcxi_DebugString( HfArgs("ERROR: Can not open file as archive: [%1] [MZDBcQG]").arg(acd.szArcName).c_str() );
-		clearArchiveStruct( soa );
-		acd.eOpenResult = WCXI_EUnknownFormat;
-		if( cAoc->bAskedPassword )
-			cProcRelayIntrf->iprRemoveArcFNPassword( soa.strArcName.c_str() );
-		return 0;
-	}
-	UInt32 uNumItems2 = 0;
-	(*archive2)->GetNumberOfItems( &uNumItems2 );
-	wcxi_DebugString( HfArgs("[%1] num items: %2")
-			.arg( hf_basename( acd.szArcName ) )
-			.arg((uint32_t)uNumItems2).c_str() );
-
-	soa.uNumItems = uNumItems2;
-	wcxi_DebugString("x::openArchive() done OK.");
-
-
-	if( !strArcOpenShellNotify.empty() ){
-		wcxi_DebugString( HfArgs("shell-command: [%1]")
-				.arg( strArcOpenShellNotify.c_str() ).c_str() );
-		std::string strSelfWcxDir = hf_dirname( SelfWcxFile->c_str() );
-		//wcxi_DebugString( HfArgs("handler_name : [%1]\n"
-		//				"arc_name     : [%2]\n"
-		//				"wcx_dir      : [%3]")
-		//		.arg( hdlr->name2.c_str() )
-		//		.arg( soa.strArcName.c_str() )
-		//		.arg( strSelfWcxDir.c_str() ).c_str() );
-		std::string cmd2 = strArcOpenShellNotify;
-		cmd2 = hf_strreplace( "{*handler_name*}", hdlr->name2.c_str(), cmd2.c_str() );
-		cmd2 = hf_strreplace( "{*arc_name*}", soa.strArcName.c_str(), cmd2.c_str() );
-		cmd2 = hf_strreplace( "{*wcx_dir*}", strSelfWcxDir.c_str(), cmd2.c_str() );
-		if( system( cmd2.c_str() ) ){
-		}
-	}
-	return new wcxi_SOpenedArc( soa );
 }
 bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 {
@@ -513,7 +350,7 @@ bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 		(*archive2)->GetProperty( uCitm, kpidPackSize, &prop );
 		shd.uPackSize = ( prop.vt == VT_UI8 ? (uint64_t)prop.uhVal.QuadPart : 0 );
 
-		// NOTE: must prepend dirs with slash ('/') character,
+		// NOTE: directories must be prepended with a slash ('/') character,
 		//       otherwise DCMD boguoussly shows directory name 2nd
 		//       time as a regular file.
 	}else{
@@ -641,11 +478,12 @@ std::string wcxi_StripPostTarEtcExts( const char* inp, const SArcHandler* hdlr4 
 	}
 	return inp;
 }
+
 bool WcxiPlugin::
 canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 						uint64_t uScanSize4, const char* szExt )
 {
-	//wcxi_DebugString( HfArgs("x::canYouHandleThisFile()").arg("").c_str());
+	//printf("x::canYouHandleThisFile_()\n");
 	std::string str, strFnmRl;
 	uScanSize4 = ( uScanSize4 ? uScanSize4 : uCYHTFScanSize );
 	hf_assert(cPlugin);
@@ -658,35 +496,27 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 	}else{
 		strFnmRl = szFileName;
 	}
-	std::basic_string<wchar_t> strFnmUc;
-	hf_Utf8DecodeToAny( strFnmRl.c_str(), -1, strFnmUc, 0 );
-	wcxi_DebugString( HfArgs("strFnmUc.size: %1").arg( strFnmUc.size() ).c_str());
-
 	std::vector<SArcHandler*> hdlrs3;
 	std::vector<SArcHandler*>::const_iterator c;
-	if( szExt && *szExt ){
-		hdlrs3 = getHandlersForExt( szExt );
-	}else{
-		hdlrs3 = getHandlersForExt( "*" );
-	}
+	hdlrs3 = getHandlersForExt( ( szExt && *szExt ? szExt : "*" ) );
 	wcxi_DebugString( HfArgs("Trying archive handlers (count:%1)").arg((int)hdlrs3.size()).c_str() );
 
-	CWCXInFileStream* fileSpec2 = new CWCXInFileStream;//CInFileStream
-	if( !fileSpec2->Open( FString(strFnmUc.c_str()) ) ){
-		wcxi_DebugString( HfArgs("ERROR: Can not open archive file: [%1] [Q7JgqyS]").arg(szFileName).c_str() );
-		delete fileSpec2;
+	CWCXIInStream* wcxiStream = new CWCXIInStream( strFnmRl.c_str() );
+	if( !wcxiStream->isFPStreamOpened() ){
+		wcxi_DebugString( HfArgs("ERROR: Can not open archive file: [%1] [wyQreWo]").arg(szFileName).c_str() );
+		delete wcxiStream;
 		return 0;
 	}
-	fileSpec2->AddRef();
-	// NOTE: Somehow Cab handler freezes somwhere in the stream-open,
-	//       on all files tested...
+	wcxiStream->AddRef();
+
+	// NOTE: Cab handler, Somehow freezes somwhere in the stream-open,
+	//       on all files tested (as of p7zip 15.09) ...
 	int i; bool bCanOpen = 0; NCOM::CPropVariant prop;
 	for( c = hdlrs3.begin(), i=0; c != hdlrs3.end(); ++c, i++ ){
 		std::vector<std::string>::const_iterator b;
 		b = std::find( lsCYHTFHandlersOff.begin(), lsCYHTFHandlersOff.end(), (**c).name2 );
 		if( b != lsCYHTFHandlersOff.end() )
 			continue;
-
 		wcxi_DebugString( HfArgs("Trying handler %1/%2 '%3'")
 				.arg(i+1)
 				.arg((int)hdlrs3.size())
@@ -694,28 +524,18 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 
 		CMyComPtr<IInArchive> archive4;
 		if( createObjectFunc2( (GUID*)(&(**c).guid2[0]), &IID_IInArchive, (void**)&archive4 ) != S_OK ){
-			wcxi_DebugString(HfArgs("ERROR: Can not get class object: '%1'. [LkB9ktH]").arg((**c).name2.c_str()).c_str() );
+			wcxi_DebugString(HfArgs("ERROR: Can not get class_ object: '%1'. [LkB9ktH]").arg((**c).name2.c_str()).c_str() );
 			continue;
 		}
-		fileSpec2->Seek( 0, STREAM_SEEK_SET, 0 );//[offset,origin,*offset]
-		CMyComPtr<IInStream> file3( fileSpec2 );
+		wcxiStream->Seek( 0, STREAM_SEEK_SET, 0 );
+		CMyComPtr<IInStream> file4( wcxiStream );
+
 		const UInt64 uScanSize2 = uScanSize4;//uCYHTFScanSize;
-		// STDMETHOD(Open_)(IInStream *stream, const UInt64 *maxCheckStartPosition,
-		//     IArchiveOpenCallback *openCallback) MY_NO_THROW_DECL_ONLY x; ...
 		CArcOpenCalb* cAoc = new CArcOpenCalb( szFileName );
 		CMyComPtr<IArchiveOpenCallback> cAocCom( cAoc );
-		if( archive4->Open( file3, &uScanSize2, cAocCom ) == S_OK ){
+		if( archive4->Open( file4, &uScanSize2, cAocCom ) == S_OK ){
 			wcxi_DebugString(HfArgs("NOTE: open ok as '%1'").arg((**c).name2.c_str()).c_str() );
 			bCanOpen = 1;
-			//
-			//prop.Clear();
-			//archive4->GetArchiveProperty( kpidPhySize, &prop );
-			//uint64_t uPhySize = ( prop.vt == VT_UI8 ? (uint64_t)prop.uhVal.QuadPart : 0 );
-			//wcxi_DebugString(HfArgs("uPhySize: %1").arg2( uPhySize ).c_str() );
-			//prop.Clear();
-			//archive4->GetArchiveProperty( kpidOffset, &prop );
-			//uint64_t uArcOffset = (uint64_t)prop.uhVal.QuadPart;
-			//wcxi_DebugString(HfArgs("uArcOffset: %1").arg2( uArcOffset ).c_str() );
 			//
 			sLastCyhtf.strArcFn  = szFileName;
 			sLastCyhtf.strHnName = (**c).name2.c_str();
@@ -728,11 +548,114 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 				cProcRelayIntrf->iprRemoveArcFNPassword( szFileName );
 		}
 	}
-	fileSpec2->Release();
+	wcxiStream->Release();
+	//printf("x::canYouHandleThisFile_()->%d\n", bCanOpen );
 	return bCanOpen;
 }
 std::string WcxiPlugin::getP7ZIPHeadersVersion()const
 {
 	std::string str = P7ZIP_VERSION;
 	return str;
+}
+
+void* WcxiPlugin::openArchive( wcxi_OpenArchiveData& acd )
+{
+	hf_assert( createObjectFunc2 );
+	std::string str, strFnmRl2;
+	wcxi_SOpenedArc soa;
+	soa.ident      = ++uArcLastIdent;
+	soa.verify2    = ~soa.ident;
+	soa.strArcName = acd.szArcName;
+
+	if( !(str = wcxi_readlink( acd.szArcName, 0 )).empty() ){
+		strFnmRl2 = str;
+	}else{
+		strFnmRl2 = acd.szArcName;
+	}
+	UInt64 uScanSize3 = uScanSize;
+	const SArcHandler* hdlr = 0;
+	if( soa.strArcName == sLastCyhtf.strArcFn ){
+		hf_assert( sLastCyhtf.hdlr2 );
+		hdlr = sLastCyhtf.hdlr2;
+		uScanSize3 = uCYHTFScanSize;
+		//sLastCyhtf.clear2();
+	}else{
+		sLastCyhtf.clear2();
+		uScanSize3 = uScanSize;
+		std::string ext4 = hf_basename3( acd.szArcName ).second;
+		if( !canYouHandleThisFile( soa.strArcName.c_str(), &hdlr, uScanSize3, ext4.c_str() ) ){
+			wcxi_DebugString( HfArgs("NOTE: No handler for archive: [.../%1]. [aY0lZRW]")
+					.arg( hf_basename(acd.szArcName) ).c_str() );
+			clearArchiveStruct( soa );
+			acd.eOpenResult = WCXI_EUnknownFormat;
+			return 0;
+		}
+	}
+	if(!hdlr){
+		wcxi_DebugString( HfArgs("ERROR: No handler for archive: [.../%1]. [WmqBeAy]")
+				.arg( hf_basename(acd.szArcName) ).c_str() );
+		clearArchiveStruct( soa );
+		acd.eOpenResult = WCXI_EUnknownFormat;
+		return 0;
+	}
+	soa.hdlr3 = hdlr;
+	CMyComPtr<IInArchive>* archive2 = new CMyComPtr<IInArchive>;
+	soa.archive3 = archive2;//&CLSID_Format
+	if( createObjectFunc2( (GUID*)(&hdlr->guid2[0]), &IID_IInArchive, (void**)&(*archive2) ) != S_OK ){
+		wcxi_DebugString("ERROR: Can not get class_ object. [gKIBoR1f]");
+		clearArchiveStruct( soa );
+		acd.eOpenResult = WCXI_EUnknownFormat;
+		return 0;
+	}
+	//
+	CWCXIInStream* wcxiStream2 = new CWCXIInStream( strFnmRl2.c_str() );
+	if( !wcxiStream2->isFPStreamOpened() ){
+		HfArgs argserr = HfArgs("ERROR: Can not open archive file: [%1] [pPoekG]")
+					.arg(strFnmRl2.c_str());
+		wcxi_DebugString( argserr.c_str() );
+		delete wcxiStream2;
+		return 0;
+	}
+	wcxiStream2->AddRef();
+	CMyComPtr<IInStream> file5( wcxiStream2 );
+	CArcOpenCalb* cAoc = new CArcOpenCalb( soa.strArcName.c_str() );
+
+	CMyComPtr<IArchiveOpenCallback> cAocCom2( cAoc );
+	if( (**archive2).Open( file5, &uScanSize3, cAocCom2 ) != S_OK ){
+		wcxi_DebugString( HfArgs("ERROR: Can not open file as archive: [%1] [MZDBcQG]").arg(acd.szArcName).c_str() );
+		clearArchiveStruct( soa );
+		acd.eOpenResult = WCXI_EUnknownFormat;
+		if( cAoc->bAskedPassword )
+			cProcRelayIntrf->iprRemoveArcFNPassword( soa.strArcName.c_str() );
+		wcxiStream2->Release();
+		return 0;
+	}
+	UInt32 uNumItems2 = 0;
+	(*archive2)->GetNumberOfItems( &uNumItems2 );
+	wcxi_DebugString( HfArgs("[%1] num items: %2")
+			.arg( hf_basename( acd.szArcName ) )
+			.arg((uint32_t)uNumItems2).c_str() );
+	wcxiStream2->Release();
+
+	soa.uNumItems = uNumItems2;
+	wcxi_DebugString("x::openArchive() done OK.");
+
+	if( !strArcOpenShellNotify.empty() ){
+		wcxi_DebugString( HfArgs("shell-command: [%1]")
+				.arg( strArcOpenShellNotify.c_str() ).c_str() );
+		std::string strSelfWcxDir = hf_dirname( SelfWcxFile->c_str() );
+		//wcxi_DebugString( HfArgs("handler_name : [%1]\n"
+		//				"arc_name     : [%2]\n"
+		//				"wcx_dir      : [%3]")
+		//		.arg( hdlr->name2.c_str() )
+		//		.arg( soa.strArcName.c_str() )
+		//		.arg( strSelfWcxDir.c_str() ).c_str() );
+		std::string cmd2 = strArcOpenShellNotify;
+		cmd2 = hf_strreplace( "{*handler_name*}", hdlr->name2.c_str(), cmd2.c_str() );
+		cmd2 = hf_strreplace( "{*arc_name*}", soa.strArcName.c_str(), cmd2.c_str() );
+		cmd2 = hf_strreplace( "{*wcx_dir*}", strSelfWcxDir.c_str(), cmd2.c_str() );
+		if( system( cmd2.c_str() ) ){
+		}
+	}
+	return new wcxi_SOpenedArc( soa );
 }

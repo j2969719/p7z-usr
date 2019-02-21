@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdint.h>
 #include "p7u_cmn.h"
+//#include "7zip/IStream.h" //IInStream
 
 namespace hef{}
 using namespace hef;
@@ -92,8 +93,14 @@ struct wcxi_SOpenedArc{
 	bool isMailformed()const {return ident != ~verify2;}
 };
 
-void fnInit_p7zUsr() __attribute__((constructor));
-void fnDeinit() __attribute__((destructor));
+//#ifndef P7ZUSR_INT_MAIN
+	void fnInit_p7zUsr() __attribute__((constructor));
+	void fnDeinit() __attribute__((destructor));
+//#else
+//	void fnInit_p7zUsr();
+//	void fnDeinit();
+//#endif
+
 std::string wcxi_readlink( const char* szPath, bool bEmptyOnFail );
 std::string wcxi_StripPostTarEtcExts( const char* inp, const SArcHandler* hdlr4 );
 
@@ -136,5 +143,7 @@ private:
 };
 extern WcxiPlugin* cPlugin;
 extern IProcRelay* cProcRelayIntrf;
+
+
 
 #endif //_P7U_CLS_H_

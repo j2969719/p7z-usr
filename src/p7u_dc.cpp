@@ -185,6 +185,8 @@ BOOL __stdcall CanYouHandleThisFile( char* szFileName )
 {
 	if(!cProcRelayIntrf)
 		cProcRelayIntrf = new CDCProcRelay;
+	//printf("CanYouHandleThisFile() ==============================\n");
+	//printf("[%s]\n", szFileName );
 	bool rs2 = cPlugin->canYouHandleThisFile( szFileName, 0, 0, 0 );
 	wcxi_DebugString( HfArgs("CanYouHandleThisFile() done, %1").arg((int)rs2).c_str());
 	return rs2;
@@ -347,3 +349,31 @@ void ExtensionInitialize( void* ptrExtensionStartupInfo )
 	void** ppMsgBoxProc = (void**) (((char*)ptrExtensionStartupInfo) + offs3);
 	fncDcMessageBoxProc = (DcMessageBoxProc_t) *ppMsgBoxProc;
 }
+
+
+#ifdef P7ZUSR_INT_MAIN   //[aad5AbkWhJ93]
+
+
+	int main( int argc, const char*const* argv )
+	{
+		printf("P7ZUSR_INT_MAIN\n");
+		const char* szFnm = "./ts1_śś.zip";
+		printf("P7ZUSR2: szFnm: [%s]\n", szFnm );
+		//bool bCnaHndl = !!CanYouHandleThisFile( (char*) szFnm );
+		//printf("bCnaHndl: %d\n", bCnaHndl );
+
+		wcxi_OpenArchiveData oad;
+		oad.szArcName = szFnm;
+		oad.bListingOnly = 0;
+		oad.eOpenResult = 0;
+		bool bOpOk = cPlugin->openArchive( oad );
+		printf("bOpOk: %d\n", bOpOk );
+		//*/
+		//IInStream
+		;
+		return 0;
+	}
+#endif   //[aad5AbkWhJ93]
+
+
+

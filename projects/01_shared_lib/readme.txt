@@ -139,7 +139,7 @@ Features and Limitations
 	[-] read only
 	[-] multi volume archives not supported
 	[-] no file attributes
-	[-] no Rar5 (can only see files are in the archive)
+	[-] no Rar5 (can only see files in the archive)
 
 
 FAQ
@@ -258,8 +258,11 @@ Changelog
 		* Readme file additions.
 
 	v 0.7
-		* File dates
+		* File dates.
 
 	v 0.8
 		* File dates on extracted files fix.
 		* New INI option: 'bDisableFileDates'.
+
+	v 0.9
+		* Fixed opening of archives containing unicode characters in path name.
