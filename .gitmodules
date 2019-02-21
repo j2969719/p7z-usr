@@ -1,0 +1,3 @@
+[submodule "p7zip/compatible_version"]
+	path = p7zip/compatible_version
+	url = https://github.com/warexify/p7zip.git
