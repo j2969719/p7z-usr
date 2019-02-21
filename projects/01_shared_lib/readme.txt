@@ -259,3 +259,7 @@ Changelog
 
 	v 0.7
 		* File dates
+
+	v 0.8
+		* File dates on extracted files fix.
+		* New INI option: 'bDisableFileDates'.

@@ -4,7 +4,8 @@
 CArcExtractCalb::
 CArcExtractCalb( IInArchive* archive6_, const std::vector<SFi>* lsFi_, wcxi_SOpenedArc* soa_ )
 	: archive6(archive6_), uFsize(0), uFSizeDone(0), uTotalSize(0), uTotalSizeDone(0)
-	, fp2(0), lsFi(lsFi_), eError4(0), uWriStride2(0), soa4(soa_)
+	, fp2(0), lsFi(lsFi_), eError4(0), nNumFtimeFails(0), uWriStride2(0), soa4(soa_)
+	, CurFi(0)
 {
 	++uGlobArcExcCalbRefc;
 	wcxi_DebugString(HfArgs("uGlobArcExcCalbRefc: %1").arg( uGlobArcExcCalbRefc ).c_str() );
@@ -24,12 +25,21 @@ void CArcExtractCalb::closeFileIfAny()
 	if(fp2){
 		fclose( fp2 );
 		fp2 = 0;
+		if( CurFi ){
+			if( !cPlugin->isDisableFileDatesSet() ){ // INI.bDisableFiletime
+				if( CurFi->uMTimeMs && !nNumFtimeFails ){
+					if( !wcxi_SetFileMTimeFromUnixTime1970Ms( CurFi->strDstFnmi.c_str(), CurFi->uMTimeMs ) )
+						nNumFtimeFails++;
+				}
+			}
+			CurFi = 0;
+		}
 	}
 }
 uint64_t WcxiPlugin::
-getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const
+getUpdateExtrFileSizesEtc( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const
 {
-	CMyComPtr<IInArchive>* archive2 = (CMyComPtr<IInArchive>*)soa->archive3;
+	CMyComPtr<IInArchive>* archive2 = reinterpret_cast<CMyComPtr<IInArchive>*>(soa->archive3);
 	//hf_assert( archive2 );
 	if(!archive2){
 		return 0;
@@ -42,6 +52,15 @@ getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )
 		(**archive2).GetProperty( a->uCFItem, kpidSize, &prop );
 		a->uFsizei = ( prop.vt == VT_UI8 ? prop.uhVal.QuadPart : 0 );
 		uSizeSum += a->uFsizei;
+		if( !cPlugin->isDisableFileDatesSet() ){
+			prop.Clear();
+			(**archive2).GetProperty( a->uCFItem, kpidMTime, &prop );
+			if( prop.vt == VT_FILETIME ){
+				uint64_t nano100thSecs = wcxi_Conv2xU32ToU64( prop.filetime.dwLowDateTime, prop.filetime.dwHighDateTime );
+				int64_t x = hf_convWinFiletime1601ToUnix1970ms( nano100thSecs );
+				a->uMTimeMs = std::max<int64_t>( x, 0 );
+			}
+		}
 		indexesOu->push_back( a->uCFItem );
 	}
 	return uSizeSum;
@@ -71,6 +90,7 @@ GetStream( UInt32 index3, ISequentialOutStream** outStream, Int32 askExtractMode
 	uFsize = a->uFsizei;
 	uFSizeDone = 0;
 	CurFname = a->strSrcFnmi;
+	CurFi = &*a;  //SFi*
 	*outStream = this;
 	return S_OK;
 }
@@ -134,7 +154,7 @@ bool WcxiPlugin::extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3, std::
 		.arg( (int)soa->lsExtr2.size() )
 		.c_str() );
 	std::vector<UInt32> idxsOrd;
-	getUpdateExtrFileSizes( soa, &idxsOrd );
+	getUpdateExtrFileSizesEtc( soa, &idxsOrd );
 	// x::Extract(const UInt32* indices, UInt32 numItems,
 	//     Int32 testMode, IArchiveExtractCallback *extractCallback)
 	CMyComPtr<IInArchive>* archive5 = (CMyComPtr<IInArchive>*)soa->archive3;

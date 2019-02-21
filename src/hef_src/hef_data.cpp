@@ -611,7 +611,7 @@ uint32_t hf_getGlobalTicks()
 		// reference:
 		// .../SDL/src/timer/unix/SDL_systimer.c
 		// http://pubs.opengroup.org/onlinepubs/000095399/functions/gettimeofday.html
-		timeval tvx;
+		struct timeval tvx;
 		gettimeofday(&tvx, 0);
 		uint32_t ticksx = (uint32_t)( (tvx.tv_sec * 1000) + (tvx.tv_usec / 1000) );
 		return ticksx;
@@ -640,7 +640,7 @@ uint64_t hf_getTimeTicksMs()
 		//struct timeval:
 		//	__time_t tv_sec;		// Seconds.
 		//	__suseconds_t tv_usec;	// Microseconds.
-		timeval tvx;
+		struct timeval tvx;
 		gettimeofday(&tvx, 0);
 		uint64_t tmticks = ( ((uint64_t)tvx.tv_sec) * 1000 + (tvx.tv_usec / 1000) );
 		return tmticks;

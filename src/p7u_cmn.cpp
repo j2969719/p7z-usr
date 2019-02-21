@@ -1,12 +1,19 @@
 
 #include "p7u_cmn.h"
-#include <dlfcn.h>
+
 #include <stdio.h>
-#include <unistd.h>
+#ifdef __GNUC__
+	#include <dlfcn.h>
+	#include <unistd.h>
+	//#include <sys/types.h>
+	//#include <utime.h> //utime()
+	#include <sys/time.h> //utimes()
+#endif //__GNUC__
 #include <stdlib.h>
 #include "hef_str.h"
 #include "hef_data.h"
 #include "hef_assert.h"
+
 
 char             szP7zWcxFile[128] = "p7z_usr.wcx";
 bool             bShowDebug = 1;
@@ -88,6 +95,30 @@ int wcxi_convUnixTime1970ToTCMDTime1980( time_t inp )
 		return 0;
 	#endif
 }
+int wcxi_convWinFiletime1601ToTCMDTime1980( uint64_t uuLowWordOrBoth, uint32_t uHiWordIfAny )
+{
+	uuLowWordOrBoth |= ( uint64_t(uHiWordIfAny) << 32 );
+	uint64_t nano100thSecs = uuLowWordOrBoth;
+	int64_t tm2 = hf_convWinFiletime1601ToUnix1970ms( nano100thSecs );
+	int64_t tm3 = std::min<int64_t>( 0x7FFFFFFF, std::max<int64_t>( tm2 / 1000, 1 ) );
+	time_t tm4 = static_cast<time_t>(tm3);
+	int retv = wcxi_convUnixTime1970ToTCMDTime1980( tm4 );
+	return retv;
+}
 
-
-
+/// Sets "modtime" and "actime' of file specified as path by 'szFilename' parameter.
+/// Input 'ftimeMs' is expected to be unix timestamp in milliseconds since 1970-Jan-1.
+bool wcxi_SetFileMTimeFromUnixTime1970Ms( const char* szFilename, uint64_t ftimeMs )
+{
+	// utime(), utimes();
+	// ref: * https://stackoverflow.com/questions/651652/how-do-i-write-file-modification-dates-programmatically-in-posix
+	//      * man utime
+	if( ftimeMs > 0x7FFFFFFFFFFFFFFF )
+		return 0;
+	struct timeval tvx[2];
+	tvx[0].tv_sec  = ftimeMs / 1000;
+	tvx[0].tv_usec = (ftimeMs % 1000) * 1000;
+	tvx[1] = tvx[0];
+	bool rs2 = !utimes( szFilename, tvx );
+	return rs2;
+}

@@ -60,9 +60,10 @@ private:
 	std::string CurFname, strErrText;
 	FILE* fp2;
 	const std::vector<SFi>* lsFi;
-	int eError4;
+	int eError4, nNumFtimeFails;
 	uint32_t uWriStride2;
 	wcxi_SOpenedArc* soa4;
+	const SFi* CurFi;
 };
 
 #endif //_7Z_WCX_UNP_H_

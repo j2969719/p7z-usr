@@ -51,38 +51,41 @@ enum{
 // CPP/7zip/UI/Common/LoadCodecs.cpp
 struct SArcHandler{
 	std::vector<uint8_t>     guid2;//, sig;
-    std::string              name2;
-    std::vector<std::string> exts, extsAdd;
-    uint32_t                 flags2;
-    //
-    struct ByName{ const char* name3;
+	std::string              name2;
+	std::vector<std::string> exts, extsAdd;
+	uint32_t                 flags2;
+	//
+	struct ByName{ const char* name3;
 		ByName( const char* name_ ) : name3(name_) {}
 		bool operator()( const SArcHandler& oth )const {return oth.name2 == name3;}
-    };
+	};
 };
 struct SFi{
 	std::string strDstFnmi, strSrcFnmi;
 	uint32_t    uCFItem;
 	uint64_t    uFsizei;
+	uint64_t    uMTimeMs;  ///< file modification time. miliseconds since 1970-Jan-1. 0 = invalid time.
+	SFi() : uCFItem(0), uFsizei(0), uMTimeMs(0) {}
+	//
 	struct CmpByItem{
 		bool operator()( const SFi& a, const SFi& b )const {return a.uCFItem < b.uCFItem;}
 	};
 	struct ByItem{
 		ByItem( uint32_t uCFItem2_ ) : uCFItem2(uCFItem2_) {}
 		uint32_t uCFItem2;
-		bool operator()( const SFi& oth )const{
-			return uCFItem2 == oth.uCFItem;
+		bool operator()( const SFi& otherr )const{
+			return uCFItem2 == otherr.uCFItem;
 		}
 	};
 };
 struct wcxi_SOpenedArc{
-	uint32_t        ident, verify2;
-	std::string     strArcName;
-	uint32_t        uNumItems;
-	void*           archive3; //CMyComPtr<IInArchive>*
-	uint32_t        uNextItem;
-	std::string     strCurFile;
-	uint32_t        uCurItem;
+	uint32_t           ident, verify2;
+	std::string        strArcName;
+	uint32_t           uNumItems;
+	void*              archive3; //CMyComPtr<IInArchive>*
+	uint32_t           uNextItem;
+	std::string        strCurFile;
+	uint32_t           uCurItem;
 	const SArcHandler* hdlr3;
 	std::vector<SFi>   lsExtr2;
 	wcxi_SOpenedArc() : ident(0), verify2(0), uNumItems(0), archive3(0), uNextItem(0), uCurItem(0), hdlr3(0) {}
@@ -108,12 +111,13 @@ public:
 //	const char* getDcPromptBoxSymbol()const {return strPromptBoxSmn.c_str();}
 	std::string getP7ZIPHeadersVersion()const;
 	std::string getINIConfigFileName()const {return strIni2;}
+	bool isDisableFileDatesSet()const {return bDisableFileDates;}
 private:
 	void updateArcHandlers();
 	void clearArchiveStruct( wcxi_SOpenedArc& inp );
 	std::vector<SArcHandler*> getHandlersForExt( const char* szExt );
 	bool extractMultipleFiles( wcxi_SOpenedArc* soa, int* eError3, std::string* err2 );
-	uint64_t getUpdateExtrFileSizes( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const;
+	uint64_t getUpdateExtrFileSizesEtc( wcxi_SOpenedArc* soa, std::vector<uint32_t>* indexesOu )const;
 private:
 	struct SCyhtf{
 		std::string strArcFn, strHnName;
@@ -127,7 +131,7 @@ private:
 	std::string              strCYHTFHandlersOff, strIni2, strArcOpenShellNotify;
 	std::vector<std::string> lsCYHTFHandlersOff;
 	uint64_t                 uScanSize, uCYHTFScanSize;
-	bool                     bDoAccessViolationOnCAErr;
+	bool                     bDoAccessViolationOnCAErr, bDisableFileDates;
 //	std::string              strPromptBoxSmn, strMsgBoxSmn;
 };
 extern WcxiPlugin* cPlugin;

@@ -85,7 +85,6 @@ int __stdcall ReadHeaderEx( HANDLE hArcData, tHeaderDataEx* HeaderData )
 {
 	wcxi_DebugString("ReadHeaderEx");
 	//cPlugin->readHeaderEx()
-	;
 	return E_NOT_SUPPORTED;
 }
 int __stdcall ReadHeaderExW( HANDLE hArcData, tHeaderDataExW* swhd )
@@ -122,7 +121,7 @@ int __stdcall ReadHeaderExW( HANDLE hArcData, tHeaderDataExW* swhd )
 int __stdcall ProcessFile( HANDLE hArcData, int eOperation, char* szDestPath, char* szDestName )
 {
 	if( eOperation == PK_EXTRACT ){
-		wcxi_SOpenedArc* arcd2 = (wcxi_SOpenedArc*)hArcData;
+		wcxi_SOpenedArc* arcd2 = reinterpret_cast<wcxi_SOpenedArc*>(hArcData);
 		if( arcd2->isMailformed() )
 			return E_BAD_DATA;
 		SFi sfi;
@@ -131,8 +130,8 @@ int __stdcall ProcessFile( HANDLE hArcData, int eOperation, char* szDestPath, ch
 				.arg( szDestPath ? szDestPath : "" )
 				.arg( ( szDestPath && *szDestPath && szDestName && *szDestName ) ? "/" : "" )
 				.arg( szDestName ? szDestName : "" ).c_str();
-		sfi.uCFItem    = arcd2->uCurItem;
-		sfi.uFsizei    = 0;
+		sfi.uCFItem      = arcd2->uCurItem;
+		sfi.uFsizei      = 0;
 		arcd2->lsExtr2.push_back( sfi );
 		return 0; //0=ok
 	}else if( eOperation == PK_SKIP ){

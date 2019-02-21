@@ -126,6 +126,7 @@ void fnInit_p7zUsr()
 WcxiPlugin::WcxiPlugin( const char* szIni )
 	: uArcLastIdent(1000), strCYHTFHandlersOff("Cab,\0""xxxxxxxxxxxxxxxxxxxxx")
 	, uScanSize(1<<23), uCYHTFScanSize(1<<23), bDoAccessViolationOnCAErr(1)
+	, bDisableFileDates(0)
 //	, strPromptBoxSmn("FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 //	, strMsgBoxSmn("FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 {
@@ -200,6 +201,11 @@ WcxiPlugin::WcxiPlugin( const char* szIni )
 		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("bDoAccessViolationOnCAErr") );
 		bDoAccessViolationOnCAErr = ( a != vars.end() ? !!HfArgs("%1").arg(a->second.c_str()).toUint64() : bDoAccessViolationOnCAErr );
 		wcxi_DebugString( HfArgs("bDoAccessViolationOnCAErr: %1").arg((int)bDoAccessViolationOnCAErr).c_str() );
+	}
+	{
+		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("bDisableFileDates") );
+		bDisableFileDates = ( a != vars.end() ? !!HfArgs("%1").arg(a->second.c_str()).toUint64() : bDisableFileDates );
+		wcxi_DebugString( HfArgs("bDisableFileDates: %1").arg((int)bDisableFileDates).c_str() );
 	}
 	{
 	//	// Symbol name for DCMD input dialog box function.
@@ -330,11 +336,11 @@ bool WcxiPlugin::closeArchive( void* hArcData, int* err )
 		std::string err2;
 		if( !(retv = extractMultipleFiles( soa2, err, &err2 ) ) ){
 			std::string str3 = ( !err2.empty() ? err2.c_str() : "unknown error" );
-			IProcRelay::SMsgBox smb;
-			smb.capt   = szP7zWcxFile;
-			smb.msg    = str3.c_str();
-			smb.flags3 = 0x10;
-			if( cProcRelayIntrf->iprMessageBox(smb) ){
+			IProcRelay::SMsgBox smbx;
+			smbx.capt   = szP7zWcxFile;
+			smbx.msg    = str3.c_str();
+			smbx.flags3 = 0x10;
+			if( cProcRelayIntrf->iprMessageBox(smbx) ){
 				bPreventAccVio = 1;
 			}
 		}
@@ -460,7 +466,7 @@ void* WcxiPlugin::openArchive( wcxi_OpenArchiveData& acd )
 }
 bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 {
-	wcxi_SOpenedArc* soa3 = (wcxi_SOpenedArc*)hArcData;
+	wcxi_SOpenedArc* soa3 = reinterpret_cast<wcxi_SOpenedArc*>(hArcData);
 	if( soa3->isMailformed() ){
 		wcxi_DebugString("WARNING: Mailformed archive data struct on read-header-ex call [ynxubrS].");
 		return WCXI_EBadData;//E_BAD_DATA
@@ -521,10 +527,12 @@ bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 	prop.Clear();
 	(**archive2).GetProperty( uCitm, kpidMTime, &prop );
 	if( prop.vt == VT_FILETIME ){
-		uint64_t nano100thSecs = wcxi_Conv2xU32ToU64( prop.filetime.dwLowDateTime, prop.filetime.dwHighDateTime );
-		int64_t tm2 = hf_convWinFiletime1601ToUnix1970ms( nano100thSecs );
-		int64_t tm3 = std::min<int64_t>( 0x7FFFFFFF, std::max<int64_t>( tm2 / 1000, 1 ) );
-		shd.nFileTime = wcxi_convUnixTime1970ToTCMDTime1980( static_cast<time_t>(tm3) );
+		//uint64_t nano100thSecs = wcxi_Conv2xU32ToU64( prop.filetime.dwLowDateTime, prop.filetime.dwHighDateTime );
+		//int64_t tm2 = hf_convWinFiletime1601ToUnix1970ms( nano100thSecs );
+		//int64_t tm3 = std::min<int64_t>( 0x7FFFFFFF, std::max<int64_t>( tm2 / 1000, 1 ) );
+		//time_t tm4 = static_cast<time_t>(tm3);
+		//shd.nFileTime = wcxi_convUnixTime1970ToTCMDTime1980( tm4 );
+		shd.nFileTime = wcxi_convWinFiletime1601ToTCMDTime1980( prop.filetime.dwLowDateTime, prop.filetime.dwHighDateTime );
 	}else{
 		shd.nFileTime = 0;
 	}

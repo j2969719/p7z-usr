@@ -22,7 +22,6 @@ extern DcPromptBoxProc_t fncDcPromptBoxProc;
 extern DcMessageBoxProc_t fncDcMessageBoxProc;
 
 
-
 /// Flags for wcxi_DebugString().
 enum{
 	WCXI_DSShowAlways = 0x1,
@@ -33,7 +32,9 @@ enum{
 void     wcxi_DebugString( const char*, int flags2 = 0 );
 void     wcxi_ConvU64To2xU32( uint64_t inp, uint32_t* uLow, uint32_t* uHi );
 uint64_t wcxi_Conv2xU32ToU64( uint32_t uLow, uint32_t uHi );
-int wcxi_convUnixTime1970ToTCMDTime1980( time_t inp );
+int      wcxi_convUnixTime1970ToTCMDTime1980( time_t inp );
+int      wcxi_convWinFiletime1601ToTCMDTime1980( uint64_t uuLowWordOrBoth, uint32_t uHiWordIfAny );
+bool     wcxi_SetFileMTimeFromUnixTime1970Ms( const char* szFilename, uint64_t ftimeMs );
 
 class IProcRelay{
 public:
