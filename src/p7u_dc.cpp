@@ -9,12 +9,9 @@
 #include "p7u_cmn.h"
 #include "p7u_cls.h"
 
-//static tChangeVolProc   fnChangeVolProc = 0;
-//static tProcessDataProc fnProcessDataProc_ = 0;
-
-//static CDCProcRelay* cProcRelayIntrf2 = 0; //CDCProcRelay* cProcRelayIntrf;
 
 DcMessageBoxProc_t fncDcMessageBoxProc;
+DcPromptBoxProc_t fncDcPromptBoxProc;
 
 // Symbol name for DCMD input dialog box function.
 // Got it by examining 'doublecmd' executable with a command:
@@ -22,16 +19,15 @@ DcMessageBoxProc_t fncDcMessageBoxProc;
 //const char* CDCProcRelay::szInpBoxSmbl = "FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL";
 //const char* CDCProcRelay::szMsgBoxSmbl = "FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT";
 
-void wcxi_SafeInitDcInterface()
-{
-	if(!cProcRelayIntrf)
-		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
-}
+
 CDCProcRelay::CDCProcRelay()
 	: fnProcessDataProc(0), nMaxPasswords(3)
 {
 	hf_assert( cPlugin );
-	fncDcPromptBoxProc = (DcPromptBoxProc_t)dlsym( RTLD_DEFAULT, cPlugin->getDcPromptBoxSymbol() );
+	if( !fncDcPromptBoxProc ){
+		//fncDcPromptBoxProc = (DcPromptBoxProc_t)dlsym( RTLD_DEFAULT, cPlugin->getDcPromptBoxSymbol() );
+		fncDcPromptBoxProc = (DcPromptBoxProc_t)dlsym( RTLD_DEFAULT, "FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL" );
+	}
 	//fncDcMessageBoxProc = (DcMessageBoxProc_t)dlsym( RTLD_DEFAULT, cPlugin->getDcMsgBoxSymbol() );
 }
 
@@ -43,11 +39,10 @@ HANDLE __stdcall OpenArchive( tOpenArchiveData* ArchiveData )
 	return 0;
 }
 
-
 HANDLE __stdcall OpenArchiveW( tOpenArchiveDataW* arcd )
 {
 	if(!cProcRelayIntrf)
-		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
+		cProcRelayIntrf = new CDCProcRelay;
 
 	std::string strArcn;
 	hf_Utf8Encode16( arcd->ArcName, -1, &strArcn, 0 );
@@ -173,23 +168,23 @@ int __stdcall CloseArchive( HANDLE hArcData )
 void __stdcall SetChangeVolProc( HANDLE, tChangeVolProc pChangeVolProc )
 {
 	if(!cProcRelayIntrf)
-		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
+		cProcRelayIntrf = new CDCProcRelay;
 	//fnChangeVolProc = pChangeVolProc;
 }
 void __stdcall SetProcessDataProc( HANDLE, tProcessDataProc pProcessDataProc )
 {
 	//wcxi_DebugString("SetProcessDataProc()");
 	if(!cProcRelayIntrf)
-		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
+		cProcRelayIntrf = new CDCProcRelay;
 
-	//cProcRelayIntrf2->fnProcessDataProc = pProcessDataProc;
-	((CDCProcRelay*)cProcRelayIntrf2)->fnProcessDataProc = pProcessDataProc;
+	//cProcRelayIntrf2_->fnProcessDataProc = pProcessDataProc;
+	((CDCProcRelay*)cProcRelayIntrf)->fnProcessDataProc = pProcessDataProc;//cProcRelayIntrf2
 }
 
 BOOL __stdcall CanYouHandleThisFile( char* szFileName )
 {
 	if(!cProcRelayIntrf)
-		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
+		cProcRelayIntrf = new CDCProcRelay;
 	bool rs2 = cPlugin->canYouHandleThisFile( szFileName, 0, 0, 0 );
 	wcxi_DebugString( HfArgs("CanYouHandleThisFile() done, %1").arg((int)rs2).c_str());
 	return rs2;
@@ -208,12 +203,13 @@ int __stdcall GetPackerCaps()
 void __stdcall ConfigurePacker( void* hwndParent, void* xDllInstance )
 {
 	if(!cProcRelayIntrf)
-		cProcRelayIntrf = cProcRelayIntrf2 = new CDCProcRelay;
+		cProcRelayIntrf = new CDCProcRelay;
 	hf_assert(cPlugin);
 	std::string msg2 = HfArgs(
 				"P7Z Usr Plugin\n"
 				"\n"
 				"P7ZIP headers version: [%1]\n"
+				"(Note: this is compile time value, shared library version may differ)\n"
 				"\n"
 				"Configuration file: [%2]\n"
 				"\n"
@@ -226,7 +222,7 @@ void __stdcall ConfigurePacker( void* hwndParent, void* xDllInstance )
 	IProcRelay::SMsgBox smb;
 	smb.capt = szP7zWcxFile;
 	smb.msg = msg2.c_str();
-	cProcRelayIntrf2->iprMessageBox( smb );
+	cProcRelayIntrf->iprMessageBox( smb );//cProcRelayIntrf2
 }
 bool CDCProcRelay::iprPromptBox( SPrompt& inp )
 {
@@ -327,4 +323,27 @@ bool CDCProcRelay::iprSetTotalPercentage( const char* szFilename, float fPercent
 		return !!fnProcessDataProc( (char*)szFilename, nSizParam2 );
 	}
 	return 1;
+}
+
+/**
+	Function called by DCMD.
+	Using hardcoded offsets. Ideally it would be to use
+	'tExtensionStartupInfo' type from 'extension.h' from DCMD SDK.
+	Not using SDK headers atm. (as of v0.5).
+*/
+void ExtensionInitialize( void* ptrExtensionStartupInfo )
+{
+	wcxi_DebugString( HfArgs("ExtensionInitialize(), pid:%1").arg( (int)getpid() ).c_str());
+	// EXT_MAX_PATH = 16384
+	int offs2 = sizeof(uint32_t) + ((sizeof(char) * 16384) * 2);
+	int offs3 = offs2 + sizeof(void*);
+	//int offs4 = sizeof(uint32_t);
+	//const char* szDir = ((char*)ptrExtensionStartupInfo) + offs4;
+	//wcxi_DebugString(szDir);
+
+	void** ppPromptBoxProc = (void**) (((char*)ptrExtensionStartupInfo) + offs2);
+	fncDcPromptBoxProc = (DcPromptBoxProc_t) *ppPromptBoxProc;
+
+	void** ppMsgBoxProc = (void**) (((char*)ptrExtensionStartupInfo) + offs3);
+	fncDcMessageBoxProc = (DcMessageBoxProc_t) *ppMsgBoxProc;
 }

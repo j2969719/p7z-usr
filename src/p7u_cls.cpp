@@ -36,7 +36,6 @@ WcxiPlugin*               cPlugin = 0;	// as extern in "p7u_cls.h"
 static void*              lib3 = 0;
 static Func_CreateObject  createObjectFunc2 = 0;
 IProcRelay*               cProcRelayIntrf = 0; // initialized in "p7u_cls.cpp"
-IProcRelay*               cProcRelayIntrf2 = 0;
 
 /*
 #include <cstdio>
@@ -69,7 +68,7 @@ void fnInit_p7zUsr()
 	const char* envv = getenv("P7ZUSRWCX_DEBUG"); //fe. "export P7ZUSRWCX_DEBUG=1"
 	bShowDebug =  ( (envv && *envv) ? !!atoi(envv) : 0 );
 	bShowDebugIsEnv = ( envv && *envv );
-	wcxi_InitMsgBoxFunction();
+	wcxi_InitMsgBoxFunctionOnSOLoad();
 	//
 	DebugLogFile = new std::string;
 	envv = getenv("P7ZUSRWCX_LOGFILE"); //fe. "export P7ZUSRWCX_LOGFILE=../ab/wcx.log"
@@ -138,8 +137,8 @@ void fnInit_p7zUsr()
 WcxiPlugin::WcxiPlugin( const char* szIni )
 	: uArcLastIdent(1000), strCYHTFHandlersOff("Cab,\0""xxxxxxxxxxxxxxxxxxxxx")
 	, uScanSize(1<<23), uCYHTFScanSize(1<<23), bDoAccessViolationOnCAErr(1)
-	, strPromptBoxSmn("FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-	, strMsgBoxSmn("FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+//	, strPromptBoxSmn("FDIALOGBOX_INPUTBOX$PCHAR$PCHAR$LONGBOOL$PCHAR$LONGINT$$LONGBOOL\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+//	, strMsgBoxSmn("FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT\0;xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 {
 	std::string str;
 	strIni2 = wcxi_readlink(szIni,0);
@@ -214,13 +213,13 @@ WcxiPlugin::WcxiPlugin( const char* szIni )
 		wcxi_DebugString( HfArgs("bDoAccessViolationOnCAErr: %1").arg((int)bDoAccessViolationOnCAErr).c_str() );
 	}
 	{
-		// Symbol name for DCMD input dialog box function.
-		// Got them by examining 'doublecmd' executable with a command: "$> nm -D ./doublecmd"
-		// szInputBoxSymbol and szMessageBoxSymbol.
-		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("szInputBoxSymbol") );
-		strPromptBoxSmn = ( a != vars.end() ? a->second : strPromptBoxSmn );
-		a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("szMessageBoxSymbol") );
-		strMsgBoxSmn = ( a != vars.end() ? a->second : strMsgBoxSmn );
+	//	// Symbol name for DCMD input dialog box function.
+	//	// Got them by examining 'doublecmd' executable with a command: "$> nm -D ./doublecmd"
+	//	// szInputBoxSymbol and szMessageBoxSymbol.
+	//	a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("szInputBoxSymbol") );
+	//	strPromptBoxSmn = ( a != vars.end() ? a->second : strPromptBoxSmn );
+	//	a = std::find_if( vars.begin(), vars.end(), HfPredTTPair<std::string,std::string>("szMessageBoxSymbol") );
+	//	strMsgBoxSmn = ( a != vars.end() ? a->second : strMsgBoxSmn );
 	}
 	{
 		// szArcOpenShellNotify

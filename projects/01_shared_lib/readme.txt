@@ -31,6 +31,7 @@ Build Instructions
 	   (Actually only ./CPP and ./C subdirectories are required for build process).
 	4. Locate the "makefile" file in "./projects/01_shared_lib" subdir.
 	5. Use this command to compile and build: "make release".
+	   (Note that 'debug' build target currently has no use).
 	6. On successful build, shared lib file "p7z_usr.wcx" will be
 	   creared in "./projects/01_shared_lib/bin/Release".
 
@@ -214,4 +215,7 @@ Changelog
 		* Removed unnecessary code assertions.
 		* Readme file updates.
 
-
+	v 0.5
+		* Added '-flto' Compiler and linker switch for better code optimization (-53KB)
+		* Dropped 'szInputBoxSymbol' and 'szMessageBoxSymbol' from the INI config.
+		* Now using ExtensionInitialize, if available. Feature provided by DCMD SDK.

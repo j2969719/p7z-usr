@@ -65,10 +65,10 @@ public:
 private:
 	std::vector<std::pair<std::string,std::string> > pwds2;
 	int nMaxPasswords;
-	DcPromptBoxProc_t fncDcPromptBoxProc;
-	//DcMessageBoxProc_t fncDcMessageBoxProc;
 };
 
-//void wcxi_SafeInitDcInterface();
+extern "C"{
+	void ExtensionInitialize( void* ptrExtensionStartupInfo );
+}
 
 #endif //_P7U_DC_H_

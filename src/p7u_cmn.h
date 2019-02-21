@@ -18,8 +18,10 @@ extern std::string*      SelfWcxFile;
 extern std::string*      Str7zSoFile;
 extern char              szP7zWcxFile[128];
 extern int               uGlobArcExcCalbRefc;
-//extern DcPromptBoxProc_t fncDcPromptBoxProc2;
+extern DcPromptBoxProc_t fncDcPromptBoxProc;
 extern DcMessageBoxProc_t fncDcMessageBoxProc;
+
+
 
 /// Flags for wcxi_DebugString().
 enum{
@@ -57,7 +59,9 @@ public:
 	virtual bool iprRemoveArcFNPassword( const char* szArcFnm ) = 0;
 };
 
-void wcxi_InitMsgBoxFunction();
+void wcxi_InitMsgBoxFunctionOnSOLoad();
 bool wcxi_MessageBox3( const char* capt, const char* msg, int flags2 );
+
+
 
 #endif //_P7U_CMN_H_

@@ -30,19 +30,19 @@ DEP_DEBUG =
 OUT_DEBUG = bin/Debug/p7z_usr.wcx
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -O2 -DNDEBUG
+CFLAGS_RELEASE = $(CFLAGS) -O2 -flto -DNDEBUG
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
-LDFLAGS_RELEASE = $(LDFLAGS) -s
+LDFLAGS_RELEASE = $(LDFLAGS) -s -flto
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/p7z_usr.wcx
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/src/p7u_cmn.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_assert.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_data.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_file.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str_args.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_utf8_str.o $(OBJDIR_DEBUG)/__/__/src/p7u_cls.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_DEBUG)/__/__/src/p7u_dc.o $(OBJDIR_DEBUG)/__/__/src/p7u_unp.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/src/p7u_cmn.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_assert.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_data.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_file.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_str_args.o $(OBJDIR_DEBUG)/__/__/src/hef_src/hef_utf8_str.o $(OBJDIR_DEBUG)/__/__/src/p7u_cls.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_DEBUG)/__/__/src/p7u_dc.o $(OBJDIR_DEBUG)/__/__/src/p7u_unp.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/src/p7u_cmn.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_assert.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_data.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_file.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str_args.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_utf8_str.o $(OBJDIR_RELEASE)/__/__/src/p7u_cls.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_RELEASE)/__/__/src/p7u_dc.o $(OBJDIR_RELEASE)/__/__/src/p7u_unp.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/src/p7u_cmn.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_assert.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_data.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_file.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_str_args.o $(OBJDIR_RELEASE)/__/__/src/hef_src/hef_utf8_str.o $(OBJDIR_RELEASE)/__/__/src/p7u_cls.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/myWindows/wine_date_and_time.o $(OBJDIR_RELEASE)/__/__/src/p7u_dc.o $(OBJDIR_RELEASE)/__/__/src/p7u_unp.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/C/Threads.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariantConv.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/PropVariant.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileName.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileIO.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/UTFConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/StringConvert.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyWindows.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyVector.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/MyString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/IntToString.o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/7zip/Common/FileStreams.o
 
 all: debug release
 
@@ -118,9 +118,6 @@ $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o: ../../p7zip/p7zi
 
 $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o
-
-$(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o: ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o
 
 $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o: ../../p7zip/p7zip_15x09/CPP/Common/Wildcard.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../p7zip/p7zip_15x09/CPP/Common/Wildcard.cpp -o $(OBJDIR_DEBUG)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o
@@ -227,9 +224,6 @@ $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileFind.o: ../../p7zip/p7
 
 $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o: ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/FileDir.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/FileDir.o
-
-$(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o: ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Windows/DLL.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Windows/DLL.o
 
 $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o: ../../p7zip/p7zip_15x09/CPP/Common/Wildcard.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../p7zip/p7zip_15x09/CPP/Common/Wildcard.cpp -o $(OBJDIR_RELEASE)/__/__/p7zip/p7zip_15x09/CPP/Common/Wildcard.o

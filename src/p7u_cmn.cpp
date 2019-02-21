@@ -48,13 +48,18 @@ void wcxi_ConvU64To2xU32( uint64_t inp, uint32_t* uLow, uint32_t* uHi )
 	*uLow = (uint32_t)( inp & 0xFFFFFFFF );
 	*uHi = (uint32_t)( (inp >> 32) & 0xFFFFFFFF );
 }
-void wcxi_InitMsgBoxFunction()
+void wcxi_InitMsgBoxFunctionOnSOLoad()
 {
-	hf_assert( !fncDcMessageBoxProc );
-	fncDcMessageBoxProc = (DcMessageBoxProc_t)dlsym( RTLD_DEFAULT, "FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT" );
+	//hf_assert( !fncDcMessageBoxProc );
+	if( !fncDcMessageBoxProc )
+		fncDcMessageBoxProc = (DcMessageBoxProc_t)dlsym( RTLD_DEFAULT, "FDIALOGBOX_MESSAGEBOX$PCHAR$PCHAR$LONGINT$$LONGINT" );
+
+	//cPlugin->getDcMsgBoxSymbol();
 }
 bool wcxi_MessageBox3( const char* capt, const char* msg, int flags2 )
 {
 	if( fncDcMessageBoxProc );
 		return !!fncDcMessageBoxProc( msg, capt, flags2, 0 );
 }
+
+
