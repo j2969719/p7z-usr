@@ -652,7 +652,7 @@ std::basic_string<T> hf_dirname( const T* in )
 }
 /// Returns base name part (filename + extension) given path.
 /// \param inp   - input file name.
-/// \param extOu - optional. if set, always gets value assigned. at char pos of ext or at null term byte.
+/// \param extOu - optional. if set, always gets value assigned. at char pos of ext or at null byte.
 /// \sa GP_dirname_and_fn
 template<class T>
 const T* hf_basename( const T* inp, const T** extOu=0 )
@@ -1241,23 +1241,27 @@ hf_implode( const U& inp, const T* glue )
 /// String explode with container argument type deduction.
 /// \param outp - output containter, fe. 'std::vector<std::string>'.
 /// \param szTrimRL - optional, characters to trim from left and right.
+/// \param nLimit - optional, set to -1 to not use. max number of spilts to do.
 /// \sa GP_str_split_funcs
 template <class T, class U> void
-hf_explode( const T* inp, const T* szGlue, U& outp, const T* szTrimRL=0 )
+hf_explode( const T* inp, const T* szGlue, U& outp, const T* szTrimRL=0, int nLimit = -1 )
 {
 	std::basic_string<T> str;
 	int lenGlue = hf_strlen<T>(szGlue);
 	const T* sz2 = inp, *sz3;
+	outp.clear();
 	if( lenGlue ){
-		for(; (sz3 = hf_strstr<T>( sz2, szGlue )); sz2 = sz3 + lenGlue ){
-			//str = std::basic_string<T>( sz2, sz3-sz2 )
+		for(; nLimit && (sz3 = hf_strstr<T>( sz2, szGlue )); sz2 = sz3 + lenGlue, nLimit-- ){
 			str.assign( sz2, sz3-sz2 );
 			if(szTrimRL)
 				str = hf_trim_stdstring( str.c_str(), szTrimRL );
 			outp.push_back( str );
 		}
 	}
-	outp.push_back( sz2 );
+	str = sz2;
+	if(szTrimRL)
+		str = hf_trim_stdstring( str.c_str(), szTrimRL );
+	outp.push_back( str );
 }
 
 
@@ -1298,6 +1302,7 @@ hf_split( const T* inp, int nSubstrLength, U& outp )
 	HfCStrPiece::replace() (3+ methods) \n
 	HfCStrPiece::reduceLinesDepth() \n
 	HfCStrPiece::replace_ch() \n
+	hf_StrReplaceOpCloseTokensCalb() \n
 */
 
 /// Replace all occurrences of the search string with the replacement string.
@@ -1674,6 +1679,78 @@ std::basic_string<T> hf_GetRelativePath( const T* from3, const T* to3, int flags
 	}else if( flags2 & HF_EGRP_DotMarkIfCwd && !outp.empty() && outp[0] != (T)'/' && outp[0] != (T)'.' ){
 		outp = szDotSl + outp;
 	}
+	return outp;
+}
+
+/**
+	String search-replace occurences given open-tag, close-tag and
+	string getter function.
+	using this function it is possible to search-replace object-like
+	properties that are prefixed and suffixed by tokens, eg.
+	by curly brackets.
+
+	\param inp -
+				input string.
+	\param fnStrGetter -
+				calback function that is called for every key occurence.
+				Required declaration:
+				\code
+					std::string (*)( const char* szKey, bool& bKeepOriginal );
+				\endcode
+
+	NOTE: about C++ lambdas, in member function scope, it is required to
+			not use pointer or reference type for 'fnStrGetter' parameter.
+			otherwise, lambda wont be able to capture local or class scope
+			variables,
+
+	\verbatim
+		Example #1
+		--------------
+		Given input string as:
+			"./script.sh -s {uri.scheme} -h {uri.host} -p {uri.port}"
+
+		Return-value becomes:
+			"./script.sh -s http -h example.com -p 9980"
+
+		once the following input parameters has been provided:
+		op:      "{uri."
+		cl:      "}"
+		search-replace:
+			"scheme" -> "http",
+			"host"   -> "example.com",
+			"port"   -> "9980",
+	\endverbatim
+	\sa GP_str_srch_replace
+*/
+template<class T, class V> std::basic_string<T>
+hf_StrReplaceOpCloseTokensCalb( const T* inp, const T* szOpenToken,
+					const T* szCloseToken, V fnStrGetter )
+{
+	const std::basic_string<T> str = inp, op2 = szOpenToken, cl2 = szCloseToken;
+	std::basic_string<T> outp;
+	size_t ppos = 0;
+	for( ;; ){
+		size_t pos, endd, kpos;
+		// search for a opening seqence, fe. "{rq.".   //}
+		if( (pos = str.find( op2, ppos )) == std::string::npos )
+			break;
+		kpos = pos + op2.size();
+		if( (endd = str.find( cl2, kpos )) == std::string::npos )
+			break;
+		outp += str.substr( ppos, pos-ppos );  //add orig stride.
+		std::basic_string<T> knm = str.substr( kpos, endd-kpos );   //get key name.
+		std::basic_string<T> val2;
+		bool bKeepOriginal = 0;
+		val2 = fnStrGetter( knm.c_str(), bKeepOriginal );
+		if( !bKeepOriginal ){
+			outp += val2;
+		}else{
+			outp += op2 + knm + cl2;
+		}
+		endd += cl2.size(); //advance past the closing sequence.
+		ppos = endd;
+	}
+	outp += str.substr( ppos );
 	return outp;
 }
 

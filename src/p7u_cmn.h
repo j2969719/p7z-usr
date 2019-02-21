@@ -30,9 +30,10 @@ enum{
 	WCXI_DSAddExitNowMBText = 0x4,
 };
 
-void wcxi_DebugString( const char*, int flags2 = 0 );
-void wcxi_ConvU64To2xU32( uint64_t inp, uint32_t* uLow, uint32_t* uHi );
-//void wcxi_SafeInitDcInterface();
+void     wcxi_DebugString( const char*, int flags2 = 0 );
+void     wcxi_ConvU64To2xU32( uint64_t inp, uint32_t* uLow, uint32_t* uHi );
+uint64_t wcxi_Conv2xU32ToU64( uint32_t uLow, uint32_t uHi );
+int wcxi_convUnixTime1970ToTCMDTime1980( time_t inp );
 
 class IProcRelay{
 public:

@@ -53,7 +53,7 @@ public:
 	/// Argument insert method for general unsigned integer types.
 	/// From "unsigned char" to "uint64_t".
 	/// \sa GP_strprint_value
-	HfTArgs& arg2( const uint64_t& a, int uBase=10, size_t uLeadingCharsCount=0, char cLeading='0' ){ // arg()
+	HfTArgs& arg2( const uint64_t& a, int uBase=10, size_t uLeadingCharsCount=0, char cLeading='0' ){
 		return arg_u64( a, uBase, uLeadingCharsCount, cLeading, 0, "" );
 	}
 	/// Argument insert for 'float' type value.

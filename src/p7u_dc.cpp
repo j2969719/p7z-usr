@@ -109,6 +109,7 @@ int __stdcall ReadHeaderExW( HANDLE hArcData, tHeaderDataExW* swhd )
 		swhd->FileName[num] = 0;
 		wcxi_ConvU64To2xU32( shd.uUnpSize, &swhd->UnpSize, &swhd->UnpSizeHigh );
 		wcxi_ConvU64To2xU32( shd.uPackSize, &swhd->PackSize, &swhd->PackSizeHigh );
+		swhd->FileTime = shd.nFileTime;
 		return 0; // 0=ok
 	}else{
 		if( shd.eError == WCXI_ENoMoreFiles ){
@@ -335,8 +336,8 @@ void ExtensionInitialize( void* ptrExtensionStartupInfo )
 {
 	wcxi_DebugString( HfArgs("ExtensionInitialize(), pid:%1").arg( (int)getpid() ).c_str());
 	// EXT_MAX_PATH = 16384
-	int offs2 = sizeof(uint32_t) + ((sizeof(char) * 16384) * 2);
-	int offs3 = offs2 + sizeof(void*);
+	const int offs2 = sizeof(uint32_t) + ((sizeof(char) * 16384) * 2);
+	const int offs3 = offs2 + sizeof(void*);
 	//int offs4 = sizeof(uint32_t);
 	//const char* szDir = ((char*)ptrExtensionStartupInfo) + offs4;
 	//wcxi_DebugString(szDir);

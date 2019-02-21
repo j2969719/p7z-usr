@@ -32,20 +32,9 @@ typedef char wcxi_assertion_on_type_size_UsdQb00J [ ( sizeof(WCHAR) == 4 ) *2 - 
 
 
 WcxiPlugin*               cPlugin = 0;	// as extern in "p7u_cls.h"
-//static NDLL::CLibrary*  lib2 = 0;
 static void*              lib3 = 0;
 static Func_CreateObject  createObjectFunc2 = 0;
 IProcRelay*               cProcRelayIntrf = 0; // initialized in "p7u_cls.cpp"
-
-/*
-#include <cstdio>
-#include <cstdlib>
-// replacement of a minimal set of functions
-void* operator new( std::size_t size2 )
-{
-	std::printf("global op new called, size = %zu\n",size2);
-	return std::malloc(size2);
-}//*/
 
 class CWCXInFileStream : public CInFileStream
 {
@@ -263,10 +252,6 @@ void fnDeinit()
 		delete Str7zSoFile;
 		Str7zSoFile = 0;
 	}
-//	if( lib2 ){
-//		delete lib2;
-//		lib2 = 0;
-//	}
 	if( lib3 ){
 		dlclose(lib3);
 		lib3 = 0;
@@ -499,7 +484,7 @@ bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 	(*archive2)->GetProperty( uCitm, kpidPath, &propFn );
 	// "CPP/Common/MyWindows.h"
 	// VT_BSTR --> bstrVal, VT_BOOL --> boolVal
-	if( propFn.vt == VT_EMPTY && soa3->uNumItems == 1 ){ // if fe. ".tar.gz"
+	if( propFn.vt == VT_EMPTY && soa3->uNumItems == 1 ){ // if fe. ".tar.gz", ".tgz" or ".tar.xz"
 		std::string fnm2;
 		fnm2 = wcxi_StripPostTarEtcExts( hf_basename(soa3->strArcName.c_str()), soa3->hdlr3 );
 		hf_Utf8DecodeToAny( fnm2.c_str(), -1, strFnWBfr, 0 );
@@ -531,6 +516,18 @@ bool WcxiPlugin::readHeaderEx( void* hArcData, wcxi_HeaderDataEx& shd )
 		shd.eError = WCXI_EBadData;//E_BAD_DATA
 		return 0;
 	}
+	// kpidCTime // kpidMTime // kpidATime-VT_FILETIME // kpidAttrib-VT_UI4
+	// prop.filetime
+	prop.Clear();
+	(**archive2).GetProperty( uCitm, kpidMTime, &prop );
+	if( prop.vt == VT_FILETIME ){
+		uint64_t nano100thSecs = wcxi_Conv2xU32ToU64( prop.filetime.dwLowDateTime, prop.filetime.dwHighDateTime );
+		int64_t tm2 = hf_convWinFiletime1601ToUnix1970ms( nano100thSecs );
+		int64_t tm3 = std::min<int64_t>( 0x7FFFFFFF, std::max<int64_t>( tm2 / 1000, 1 ) );
+		shd.nFileTime = wcxi_convUnixTime1970ToTCMDTime1980( static_cast<time_t>(tm3) );
+	}else{
+		shd.nFileTime = 0;
+	}
 	return 1;
 }
 void WcxiPlugin::updateArcHandlers()
@@ -549,7 +546,6 @@ void WcxiPlugin::updateArcHandlers()
 		SArcHandler sah;
 		prop.Clear();
 		fnGhp2( i, NArchive::NHandlerPropID::kName, &prop );
-		//hf_assert(prop.bstrVal);
 		strUc = ( prop.bstrVal ? prop.bstrVal : dmy0.c_str() );
 		hf_Utf8EncodeFromAny( strUc.Ptr(), strUc.Len(), &sah.name2, 0 );
 
@@ -588,9 +584,9 @@ void WcxiPlugin::SCyhtf::clear2()
 	strArcFn = strHnName = "";
 	hdlr2 = 0;
 }
-std::string wcxi_readlink( const char* szPath, bool bEmptyOnFail )
+std::string wcxi_readlink( const char* szPath, bool bEmptyOnDefault )
 {
-	std::string str = ( bEmptyOnFail ? "" : szPath );
+	std::string str = ( bEmptyOnDefault ? "" : szPath );
 	struct stat sbx;
 	memset( &sbx, 0, sizeof(sbx) );
 	if( -1 != lstat( szPath, &sbx ) ){
@@ -665,7 +661,7 @@ canYouHandleThisFile( const char* szFileName, const SArcHandler** ouHdlr,
 	}else{
 		hdlrs3 = getHandlersForExt( "*" );
 	}
-	wcxi_DebugString( HfArgs("Trying archive handlers (num:%1)").arg((int)hdlrs3.size()).c_str() );
+	wcxi_DebugString( HfArgs("Trying archive handlers (count:%1)").arg((int)hdlrs3.size()).c_str() );
 
 	CWCXInFileStream* fileSpec2 = new CWCXInFileStream;//CInFileStream
 	if( !fileSpec2->Open( FString(strFnmUc.c_str()) ) ){

@@ -45,10 +45,11 @@ std::string      hf_convCompilerDateYMD( const char* szUudateuu, const char* fmt
 uint32_t         hf_getGlobalTicks();
 uint64_t         hf_getTimeTicksMs();
 
-
-std::string hf_strftime2( const char* fmt, const time_t tmx );
-std::string hf_strftime3( const char* fmt, const tm* tmy );
+std::string hf_strftime2( const char* fmt, time_t tmx, const char* szTimezone = 0 );
+std::string hf_strftime3( const char* fmt, const struct tm* tmy );
 time_t      hf_mktime2( int nYear, int nMonth, int nDay, int nHour, int nMinute, int nSecond, int nDst = -1 );
+int64_t     hf_convWinFiletime1601ToUnix1970ms( uint64_t nano100thSecs );
+uint64_t    hf_convUnix1970msToWinFiletime1601( int64_t tmMsecs1970Based );
 
 /// \cond DOXYGEN_SKIP
 // internal struct for hf_arrayUnionViaVarname() use.

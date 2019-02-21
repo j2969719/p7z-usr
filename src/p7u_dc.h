@@ -12,7 +12,7 @@
 #	include <unistd.h>
 #	include "win2nix_binds.h"
 #endif
-#include "wcxhead.h" // this header must have "win2nix_binds.h" included beforehand (on non-Windows).
+#include "wcxhead.h" // NOTE: "wcxhead.h" header file must have "win2nix_binds.h" included beforehand (on non-Windows).
 #include "p7u_cmn.h"
 
 // GCC type size compile time assertion.
@@ -25,21 +25,21 @@ using namespace hef;
 class CDCProcRelay;
 
 extern "C"{
-	int __stdcall CloseArchive( HANDLE hArcData );
+	int __stdcall    CloseArchive( HANDLE hArcData );
 	HANDLE __stdcall OpenArchive( tOpenArchiveData* ArchiveData );
-	int __stdcall ProcessFile( HANDLE hArcData, int Operation, char* DestPath, char* DestName );
-	int __stdcall ReadHeader( HANDLE hArcData, tHeaderData* HeaderData );
-	int __stdcall ReadHeaderEx( HANDLE hArcData, tHeaderDataEx* HeaderData );
-	void __stdcall SetChangeVolProc( HANDLE, tChangeVolProc pChangeVolProc );
-	void __stdcall SetProcessDataProc( HANDLE, tProcessDataProc pProcessDataProc );
-	BOOL __stdcall CanYouHandleThisFile( char* FileName );
-	int __stdcall GetPackerCaps();
-	void __stdcall ConfigurePacker( void* hwndParent, void* xDllInstance );
+	int __stdcall    ProcessFile( HANDLE hArcData, int Operation, char* DestPath, char* DestName );
+	int __stdcall    ReadHeader( HANDLE hArcData, tHeaderData* HeaderData );
+	int __stdcall    ReadHeaderEx( HANDLE hArcData, tHeaderDataEx* HeaderData );
+	void __stdcall   SetChangeVolProc( HANDLE, tChangeVolProc pChangeVolProc );
+	void __stdcall   SetProcessDataProc( HANDLE, tProcessDataProc pProcessDataProc );
+	BOOL __stdcall   CanYouHandleThisFile( char* FileName );
+	int __stdcall    GetPackerCaps();
+	void __stdcall   ConfigurePacker( void* hwndParent, void* xDllInstance );
 	// WCHAR related functions:
 	HANDLE __stdcall OpenArchiveW( tOpenArchiveDataW* ArchiveData );
-	int __stdcall ProcessFileW( HANDLE hArcData, int Operation, WCHAR* DestPath, WCHAR* DestName );
-	int __stdcall ReadHeaderExW( HANDLE hArcData, tHeaderDataExW* HeaderData );
-	BOOL __stdcall CanYouHandleThisFileW( WCHAR* FileName );
+	int __stdcall    ProcessFileW( HANDLE hArcData, int Operation, WCHAR* DestPath, WCHAR* DestName );
+	int __stdcall    ReadHeaderExW( HANDLE hArcData, tHeaderDataExW* HeaderData );
+	BOOL __stdcall   CanYouHandleThisFileW( WCHAR* FileName );
 }
 
 /// Class that binds common GUI actions into DCMD calls.

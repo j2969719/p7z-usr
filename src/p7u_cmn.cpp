@@ -48,6 +48,13 @@ void wcxi_ConvU64To2xU32( uint64_t inp, uint32_t* uLow, uint32_t* uHi )
 	*uLow = (uint32_t)( inp & 0xFFFFFFFF );
 	*uHi = (uint32_t)( (inp >> 32) & 0xFFFFFFFF );
 }
+uint64_t wcxi_Conv2xU32ToU64( uint32_t uLow, uint32_t uHi )
+{
+	uint64_t outp = 0;
+	outp |= ((uint64_t)uHi) << 32;
+	outp |= uLow;
+	return outp;
+}
 void wcxi_InitMsgBoxFunctionOnSOLoad()
 {
 	//hf_assert( !fncDcMessageBoxProc );
@@ -61,5 +68,26 @@ bool wcxi_MessageBox3( const char* capt, const char* msg, int flags2 )
 	if( fncDcMessageBoxProc );
 		return !!fncDcMessageBoxProc( msg, capt, flags2, 0 );
 }
+/**
+	Converts unix timestamp to TCMD WCX 'tHeaderData::Filetime'.
+	Output is meant to be compatible with member 'Filetime' of
+	the 'tHeaderData' structure of the TCMD WCX interface.
+
+	NOTE: On DCMD on Linux, 'Filetime' integer is an actual unix timestamp,
+	      and not 1980-based integer bitmask as the original doc says.
+	      Thus, input value to this function is returned unconverted.
+*/
+int wcxi_convUnixTime1970ToTCMDTime1980( time_t inp )
+{
+	#ifdef __GNUC__
+		// On DCMD on Linux, tHeaderData::Filetime integer is actual unix timestamp.
+		return inp;
+	#else
+		#error "Non-Linux platforms are not implemented."
+		hf_assert(!"Not implemented.");
+		return 0;
+	#endif
+}
+
 
 

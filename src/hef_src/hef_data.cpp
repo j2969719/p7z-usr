@@ -601,6 +601,8 @@ hf_convCompilerDateYMD( const char* szUudateuu, const char* fmt, int* y2, int* m
 		return "";
 }
 /// Returns global ticks in miliseconds.
+/// Returnd value is 0-based at some random point in the past.
+/// On Windows its a wrapper for GetTickCount().
 uint32_t hf_getGlobalTicks()
 {
 #	ifdef _HF_TIMEOUT_SRV_WIN32
@@ -917,30 +919,45 @@ bool hf_SaveUncompressedTGA( const char* filename, uint16_t nWidth, uint16_t nHe
 /// ...
 /// hf_strftime2() \n
 /// hf_strftime3() \n
+/// hf_convWinFiletime1601ToUnix1970ms() \n
+/// hf_convUnix1970msToWinFiletime1601() \n
 
 /**
 	String prints local time.
-	Based on C functions strftime() and localtime().
+	Based on C functions strftime(), gmtime() and localtime().
 	\param fmt - format string, fe."%H:%M:%S".
 	\param tmx - optional input timestamp. if 0, current time is used (calls time(0)).
+	\param szTimezone - can be set to "GMT" to use GMT time (gmtime()), otherwise
+	                    uses local time (localtime()).
 	NOTE: This implementation has a 128 characters limit for output string.
-		  Nontheless, using even up to 4 extra characters per each component should be ok.
+	      Nontheless, using even up to 4 extra characters per each component should be ok.
 	\sa GP_strftime_etc
 */
-std::string hf_strftime2( const char* fmt, const time_t tmx )
+std::string hf_strftime2( const char* fmt, time_t tmx, const char* szTimezone )//bool bUseGMT
 {
-	return hf_strftime3( fmt, ( tmx ? localtime(&tmx) : 0 ) );
+	struct tm tmxstruct;
+	if(!tmx){
+		tmx = time(0);
+	}
+	//if( bUseGMT )
+	if( szTimezone && !hf_strcmp( szTimezone, "GMT" ) ){
+		tmxstruct = *gmtime( &tmx );
+	}else{
+		tmxstruct = *localtime( &tmx );
+	}
+	return hf_strftime3( fmt, &tmxstruct );
+	//return hf_strftime3( fmt, ( tmx ? localtime(&tmx) : 0 ), bUseGMT );
 }
 /**
-	String prints time.
+	String prints time. Internally uses strftime().
 	\sa GP_strftime_etc
 */
-std::string hf_strftime3( const char* fmt, const tm* tmy )
+std::string hf_strftime3( const char* fmt, const struct tm* tmy )
 {
-	char bfr[128]; tm tmy2;
+	char bfr[128] = ""; struct tm tmy2;
 	if(!tmy){
 		time_t tmx3 = time(0);
-		tmy2 = *localtime(&tmx3);
+		tmy2 = *localtime( &tmx3 );
 		tmy = &tmy2;
 	}
 	strftime( bfr, sizeof(bfr), fmt, tmy );
@@ -972,6 +989,67 @@ time_t hf_mktime2( int nYear, int nMonth, int nDay, int nHour, int nMinute, int 
 	tm2.tm_yday  = 0;
 	time_t tst2 = mktime( &tm2 );
 	return tst2;
+}
+
+
+
+//typedef struct _FILETIME{ //prop.filetime
+//  DWORD dwLowDateTime;
+//  DWORD dwHighDateTime;
+//}FILETIME;
+// WINAPI CHM "ms-its://ms-its/topic_filetime.htm".
+// WINAPI: The FILETIME structure is a 64-bit value representing the number of
+//         100-nanosecond intervals since January 1, 1601.
+// WCX int FileTime: 1980-Jan-1
+//
+// Epoch timestamp: -11644473600 (seconds)
+// - Human time (GMT): Monday, January 1, 1601 12:00:00 AM
+// Epoch timestamp: 0 (seconds)
+// - Human time (GMT): Thursday, January 1, 1970 12:00:00 AM
+// Epoch timestamp: 315532800 (seconds)
+// - Human time (GMT): Tuesday, January 1, 1980 12:00:00 AM
+// Epoch timestamp: 1514764800 (seconds)
+// - Human time (GMT): Monday, January 1, 2018 12:00:00 AM
+// ref: https://www.epochconverter.com/
+//
+// ll = Int32x32To64(t, 10000000) + 116444736000000000;
+// -                                11644473600
+// ref: https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
+/**
+	Returns unix timestamp in milliseconds (ms) (instead of seconds) (1s = 1000ms).
+	Time since 1970-Jan-1. Conversion can yield values Less than zero.
+	\param nano100thSecs - 64-bit value that usually is stored as two U32 valuse as
+						   FILETIME structure.
+	\code
+		// std::string hf_strftime2( const char* fmt, const time_t tmx )
+		const uint64_t val = 128166372000000000; // = [2007-02-22/18:00:00] //1172163600
+		int tsx = hf_convWinFiletime1601ToUnix1970ms( val ) / 1000;
+		str = hf_strftime2( "%Y:%m:%d-%H:%M:%S", static_cast<time_t>(tsx) );
+	\endcode
+	\sa GP_strftime_etc
+*/
+int64_t hf_convWinFiletime1601ToUnix1970ms( uint64_t nano100thSecs )
+{
+	// ref: https://stackoverflow.com/a/6161842/3239847
+	const int nWindowsTick = 10000;
+	const int64_t nSecToUnixEpoch1000 = 11644473600000LL;
+	return (nano100thSecs / nWindowsTick - nSecToUnixEpoch1000);
+}
+/**
+	Converts unix timestamp in milliseconds to Windows FILETIME.
+	\code
+		// use this method to conv 32 bit timestamp without overflow.
+		uint64_t millisecs = uint64_t(tsxx) * 1000;
+		uint64_t t = hf_convUnix1970msToWinFiletime1601( millisecs );
+	\endcode
+	\sa GP_strftime_etc
+*/
+uint64_t hf_convUnix1970msToWinFiletime1601( int64_t tmMsecs1970Based )
+{
+	// ref: https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
+	//uint64_t retv = tm1970Based * 10000000 + 116444736000000000;
+	uint64_t retv = tmMsecs1970Based * 10000 + 116444736000000000;
+	return retv;
 }
 
 } // end namespace hef

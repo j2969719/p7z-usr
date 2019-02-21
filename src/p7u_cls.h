@@ -24,10 +24,11 @@ struct wcxi_HeaderDataEx{
 	uint64_t    uPackSize;
 	uint64_t    uUnpSize;
 	/// \verbatim
-	/// FileTime contains the date and the time of the file’s last update. Use the following algorithm to set the value:
-	/// FileTime = (year - 1980) << 25 | month << 21 | day << 16 | hour << 11 | minute << 5 | second/2;
-	/// Make sure that:
-	/// year is in the four digit format between 1980 and 2100. month is a number between 1 and 12. hour is in the 24 hour format.
+	///     FileTime contains the date and the time of the file’s last update.
+	///     Use the following algorithm to set the value:
+	///     FileTime = (year - 1980) << 25 | month << 21 | day << 16 | hour << 11 | minute << 5 | second/2;
+	///     Make sure that:
+	///     year is in the four digit format between 1980 and 2100. month is a number between 1 and 12. hour is in the 24 hour format.
 	/// \endverbatim
 	int         nFileTime;
 	int         eError;
